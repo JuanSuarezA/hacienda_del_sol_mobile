@@ -1,33 +1,114 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Tabs } from "expo-router";
+import React from "react";
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { HapticTab } from "@/components/haptic-tab";
+
+import ComprasIcon from "@/assets/images/menu_icon/Compras.svg";
+import DespachosIcon from "@/assets/images/menu_icon/Despachos.svg";
+import HomeIcon from "@/assets/images/menu_icon/Home.svg";
+import OfertasIcon from "@/assets/images/menu_icon/Ofertas.svg";
+import PagosIcon from "@/assets/images/menu_icon/Pagos.svg";
+import PorteriaIcon from "@/assets/images/menu_icon/Porteria.svg";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const colorScheme = "#12521C";
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: colorScheme,
         headerShown: false,
         tabBarButton: HapticTab,
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: "Home",
+          tabBarIcon: ({ color }) => <HomeIcon fill={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="orden-de-compra/index"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: "COMPRAS",
+          tabBarIcon: ({ color }) => <ComprasIcon fill={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="pago/index"
+        options={{
+          title: "PAGOS",
+          tabBarIcon: ({ color }) => <PagosIcon fill={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="oferta/index"
+        options={{
+          title: "OFERTAS",
+          tabBarIcon: ({ color }) => <OfertasIcon fill={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="despacho/index"
+        options={{
+          title: "DESPACHOS",
+          tabBarIcon: ({ color }) => <DespachosIcon fill={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="porteria/index"
+        options={{
+          title: "PORTERIA",
+          tabBarIcon: ({ color }) => <PorteriaIcon fill={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="orden-de-compra/listado/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="orden-de-compra/pendiente/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="orden-de-compra/listado/[id]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="orden-de-compra/pendiente/[id]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="orden-de-compra/aprobada/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="orden-de-compra/recepcionada/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="orden-de-compra/aprobada/[id]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="orden-de-compra/recepcionada/[id]"
+        options={{
+          href: null,
         }}
       />
     </Tabs>
