@@ -1,3 +1,4 @@
+import CustomFechaActual from "@/components/CustomFechaActual";
 import CustomHeader from "@/components/CustomHeader";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
@@ -112,7 +113,7 @@ const ComprasScreen = () => {
         <CustomHeader />
         <View style={styles2.content}>
           <Text style={styles2.title}>Ofertas</Text>
-          <Text style={styles2.subtitle}>Lunes, 4 de Septiembre 2025</Text>
+          <CustomFechaActual />
 
           {/* BOTONES */}
           <View style={styles2.buttons}>

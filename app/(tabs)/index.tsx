@@ -1,22 +1,78 @@
 import CustomHeader from "@/components/CustomHeader";
-import React from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Double, Int32 } from "react-native/Libraries/Types/CodegenTypes";
 
+interface Inicio {
+  BOVINO: string;
+  PROPIO: string;
+  HOTELERIA: string;
+  PARCERIA: string;
+  DIESEL: string;
+  NUCLEO: string;
+  HENO: string;
+  SORGO: string;
+  POR_COBRAR: string;
+  POR_PAGAR: string;
+  EGRESO_MES: string;
+  INGRESO_MES: string;
+}
+
 const HomeScreen = () => {
+  const [resumen, setResumen] = useState<Inicio | null>(null);
+  const [loading, setLoading] = useState(true);
+  const fetchInicio = async () => {
+    try {
+      setLoading(true);
+      const [inicioRes] = await Promise.all([
+        fetch(`https://kleurdigital.xyz/util/inicio/query_inicio_mobile.php`),
+      ]);
+      const resumenJson = await inicioRes.json();
+      setResumen(resumenJson.data?.[0] || null);
+    } catch (error) {
+      console.error("Error obteniendo ordenes:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useFocusEffect(
+    useCallback(() => {
+      fetchInicio();
+    }, [])
+  );
+
+  if (loading) {
+    return (
+      <View style={styles2.loadingContainer}>
+        <ActivityIndicator size="large" color="#E6B34D" />
+      </View>
+    );
+  }
+
+  if (!resumen) {
+    console.log("No cargo");
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <CustomHeader></CustomHeader>
         {/* Banner de Notificación */}
-        <View style={styles.notificationBanner}>
+        {/* <View style={styles.notificationBanner}>
           <Text style={styles.notificationText}>
             🔔 Tienes{" "}
             <Text style={styles.boldUnderline}>1 notificación sin leer</Text>.
           </Text>
           <Text style={styles.closeIcon}>✕</Text>
-        </View>
+        </View> */}
 
         {/* Contenedor Principal de Tarjetas */}
         <View style={styles.cardWrapper}>
@@ -26,14 +82,18 @@ const HomeScreen = () => {
               <Text style={styles.mainTitle}>Ganado</Text>
               <Text style={styles.subTitleSmall}>TOTAL CABEZAS</Text>
             </View>
-            <Text style={styles.totalNumber}>30.251</Text>
+            <Text style={styles.totalNumber}>
+              {Number(resumen?.BOVINO || 0).toLocaleString("es-BO")}
+            </Text>
           </View>
 
           {/* Fila de Tarjetas Secundarias */}
           <View style={styles.row2}>
             <View style={[styles.secondaryCard, styles.flex1]}>
               <Text style={styles.subTitleSmall}>PROPIOS</Text>
-              <Text style={styles.secondaryNumber}>10.251</Text>
+              <Text style={styles.secondaryNumber}>
+                {Number(resumen?.PROPIO || 0).toLocaleString("es-BO")}
+              </Text>
             </View>
 
             <View
@@ -44,12 +104,16 @@ const HomeScreen = () => {
               ]}
             >
               <Text style={styles.subTitleSmall}>HOTELERÍA</Text>
-              <Text style={styles.secondaryNumber}>10.000</Text>
+              <Text style={styles.secondaryNumber}>
+                {Number(resumen?.HOTELERIA || 0).toLocaleString("es-BO")}
+              </Text>
             </View>
 
             <View style={[styles.secondaryCard, styles.flex1]}>
               <Text style={styles.subTitleSmall}>PARCERÍA</Text>
-              <Text style={styles.secondaryNumber}>10.000</Text>
+              <Text style={styles.secondaryNumber}>
+                {Number(resumen?.PARCERIA || 0).toLocaleString("es-BO")}
+              </Text>
             </View>
           </View>
         </View>
@@ -92,12 +156,32 @@ const HomeScreen = () => {
         {/* SECCIÓN INFERIOR: RECURSOS */}
         <View style={styles.recursos}>
           <View style={styles.row}>
-            <ResourceCard icon="⭕" label="HENO" value="300" unit="rollos" />
-            <ResourceCard icon="➕" label="NÚCLEO" value="48,50" unit="t" />
+            <ResourceCard
+              icon="⭕"
+              label="HENO"
+              value={Number(resumen?.HENO || 0).toLocaleString("es-BO")}
+              unit="toneladas"
+            />
+            <ResourceCard
+              icon="➕"
+              label="NÚCLEO"
+              value={Number(resumen?.NUCLEO || 0).toLocaleString("es-BO")}
+              unit="toneladas"
+            />
           </View>
           <View style={styles.row}>
-            <ResourceCard icon="🌱" label="SORGO" value="1500" unit="t" />
-            <ResourceCard icon="⛽" label="DIÉSEL" value="198" unit="l" />
+            <ResourceCard
+              icon="🌱"
+              label="SORGO"
+              value={Number(resumen?.SORGO || 0).toLocaleString("es-BO")}
+              unit="toneladas"
+            />
+            <ResourceCard
+              icon="⛽"
+              label="DIÉSEL"
+              value={Number(resumen?.DIESEL || 0).toLocaleString("es-BO")}
+              unit="litros"
+            />
           </View>
         </View>
 
@@ -108,14 +192,28 @@ const HomeScreen = () => {
           <View style={styles2.grid}>
             {/* Fila 1 */}
             <View style={styles2.row}>
-              <FinanceCard label="INGRESOS" value="18.000.000" />
-              <FinanceCard label="EGRESOS" value="10.500.000" />
+              <FinanceCard
+                label="INGRESOS"
+                value={Number(resumen?.INGRESO_MES || 0).toLocaleString(
+                  "es-BO"
+                )}
+              />
+              <FinanceCard
+                label="EGRESOS"
+                value={Number(resumen?.EGRESO_MES || 0).toLocaleString("es-BO")}
+              />
             </View>
 
             {/* Fila 2 */}
             <View style={styles2.row}>
-              <FinanceCard label="CUENTAS POR PAGAR" value="800.000" />
-              <FinanceCard label="CUENTAS POR COBRAR" value="10.500.000" />
+              <FinanceCard
+                label="CUENTAS POR PAGAR"
+                value={Number(resumen?.POR_PAGAR || 0).toLocaleString("es-BO")}
+              />
+              <FinanceCard
+                label="CUENTAS POR COBRAR"
+                value={Number(resumen?.POR_COBRAR || 0).toLocaleString("es-BO")}
+              />
             </View>
           </View>
         </View>
@@ -239,7 +337,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   subTitleSmall: { color: "#FFF", fontSize: 10, opacity: 0.8, marginBottom: 5 },
-  secondaryNumber: { color: "#FFF", fontSize: 18, fontWeight: "bold" },
+  secondaryNumber: {
+    color: "#FFF",
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
   flex1: { flex: 1 },
 
   cardWrapper: {
@@ -252,6 +355,7 @@ const styles = StyleSheet.create({
     elevation: 5,
     marginLeft: 20,
     marginRight: 20,
+    marginTop: 20,
   },
 
   recursos: {
@@ -326,6 +430,12 @@ const styles = StyleSheet.create({
 });
 
 const styles2 = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F4F6F8",
+  },
   container: {
     backgroundColor: "white",
     borderRadius: 30,

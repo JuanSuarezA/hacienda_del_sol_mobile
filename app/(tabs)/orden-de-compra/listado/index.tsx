@@ -1,6 +1,6 @@
 import CustomHeader from "@/components/CustomHeader";
 import { Ionicons } from "@expo/vector-icons";
-import { Link, useFocusEffect, useRouter } from "expo-router";
+import { Link, useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -27,8 +27,6 @@ interface OrdenCompra {
 }
 
 const OrdenesCompraScreen = () => {
-  const router = useRouter();
-
   // 2. Definir estados para los datos, la carga y el error
   const [ordenes, setOrdenes] = useState<OrdenCompra[]>([]);
   const [loading, setLoading] = useState(true);

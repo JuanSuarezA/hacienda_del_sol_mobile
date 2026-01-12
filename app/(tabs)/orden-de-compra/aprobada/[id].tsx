@@ -145,7 +145,7 @@ const OrdenesCompraScreen = () => {
       setLoading(true); // Opcional: mostrar loading mientras la API responde
 
       const response = await fetch(
-        `https://kleurdigital.xyz/util/aprobaciones-oc/editarOrden_mobile.php?id=${id}&tipo=${tipo}`
+        `https://kleurdigital.xyz/util/recepciones-oc/editarOrden_mobile.php?id=${id}&tipo=${tipo}`
       );
 
       const result = await response.json();
@@ -153,7 +153,7 @@ const OrdenesCompraScreen = () => {
       if (result.estado == "1") {
         Alert.alert("Éxito", result.mensaje);
         // Recargar los datos para ver el cambio de estado y color
-        router.push("/orden-de-compra/pendiente");
+        router.push("/orden-de-compra/aprobada");
       } else {
         Alert.alert(
           "Error",
@@ -189,19 +189,10 @@ const OrdenesCompraScreen = () => {
       <CustomHeader />
       <View style={styles.headerContainer}>
         <View style={styles.topRow}>
-          {/* <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="arrow-back" size={24} color="white" />
-          </TouchableOpacity> */}
-
-          <Link style={styles.backButton} href={"/orden-de-compra/pendiente"}>
+          <Link style={styles.backButton} href={"/orden-de-compra/aprobada"}>
             <Ionicons name="arrow-back" size={24} color="white" />
           </Link>
-
           <Text style={styles.headerTitle}>{orden.codigo}</Text>
-
           <View style={[styles.badge, { backgroundColor: orden.color_estado }]}>
             <Text style={styles.badgeText}>{orden.estado}</Text>
           </View>
@@ -344,7 +335,7 @@ const OrdenesCompraScreen = () => {
               style={[styles2.button, styles2.approve]}
               onPress={() => handleUpdateStatus("1")}
             >
-              <Text style={styles2.buttonText}>APROBAR</Text>
+              <Text style={styles2.buttonText}>RECEPCIONAR</Text>
               <Ionicons name="checkmark" size={18} color="#fff" />
             </TouchableOpacity>
           </View>

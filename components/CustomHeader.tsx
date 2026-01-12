@@ -1,6 +1,7 @@
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import LogoHorizontal from "@/assets/images/logo/Logo-Horizontal.svg";
+import Notificaciones from "@/assets/images/logo/Notificaciones-Inactivo.svg";
 import React from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 
 export default function CustomHeader() {
   return (
@@ -9,16 +10,16 @@ export default function CustomHeader() {
       <View style={styles.header}>
         {/* Logo y título */}
         <View style={styles.logoContainer}>
-          <MaterialIcons name="emoji-events" size={26} color="#FFD700" />
-          <View style={{ marginLeft: 8 }}>
+          <LogoHorizontal />
+          {/* <View style={{ marginLeft: 8 }}>
             <Text style={styles.logoText}>HACIENDA</Text>
             <Text style={styles.logoText}>DEL SOL</Text>
-          </View>
+          </View> */}
         </View>
 
         {/* Acciones */}
         <View style={styles.actions}>
-          <Ionicons name="notifications-outline" size={24} color="#fff" />
+          <Notificaciones />
           <Image
             source={{ uri: "https://i.pravatar.cc/150" }}
             style={styles.avatar}

@@ -10,7 +10,6 @@ import {
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -140,34 +139,6 @@ const OrdenesCompraScreen = () => {
     }
   };
 
-  const handleUpdateStatus = async (tipo: string) => {
-    try {
-      setLoading(true); // Opcional: mostrar loading mientras la API responde
-
-      const response = await fetch(
-        `https://kleurdigital.xyz/util/aprobaciones-oc/editarOrden_mobile.php?id=${id}&tipo=${tipo}`
-      );
-
-      const result = await response.json();
-
-      if (result.estado == "1") {
-        Alert.alert("Éxito", result.mensaje);
-        // Recargar los datos para ver el cambio de estado y color
-        router.push("/orden-de-compra/pendiente");
-      } else {
-        Alert.alert(
-          "Error",
-          result.message || "No se pudo actualizar la orden."
-        );
-      }
-    } catch (error) {
-      console.error("Error al actualizar:", error);
-      Alert.alert("Error", "Ocurrió un error de conexión.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     if (id) fetchOrdenes();
   }, [id]);
@@ -189,19 +160,13 @@ const OrdenesCompraScreen = () => {
       <CustomHeader />
       <View style={styles.headerContainer}>
         <View style={styles.topRow}>
-          {/* <TouchableOpacity
+          <Link
             style={styles.backButton}
-            onPress={() => router.back()}
+            href={"/orden-de-compra/recepcionada"}
           >
             <Ionicons name="arrow-back" size={24} color="white" />
-          </TouchableOpacity> */}
-
-          <Link style={styles.backButton} href={"/orden-de-compra/pendiente"}>
-            <Ionicons name="arrow-back" size={24} color="white" />
           </Link>
-
           <Text style={styles.headerTitle}>{orden.codigo}</Text>
-
           <View style={[styles.badge, { backgroundColor: orden.color_estado }]}>
             <Text style={styles.badgeText}>{orden.estado}</Text>
           </View>
@@ -334,17 +299,17 @@ const OrdenesCompraScreen = () => {
           <View style={styles2.buttonsRow}>
             <TouchableOpacity
               style={[styles2.button, styles2.reject]}
-              onPress={() => handleUpdateStatus("2")}
+              onPress={() => router.push("/(tabs)/orden-de-compra/listado")}
             >
-              <Text style={styles2.buttonText}>RECHAZAR</Text>
+              <Text style={styles2.buttonText}>CERRAR</Text>
               <Ionicons name="close" size={18} color="#fff" />
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles2.button, styles2.approve]}
-              onPress={() => handleUpdateStatus("1")}
+              onPress={() => router.push("/(tabs)/orden-de-compra/listado")}
             >
-              <Text style={styles2.buttonText}>APROBAR</Text>
+              <Text style={styles2.buttonText}>PDF</Text>
               <Ionicons name="checkmark" size={18} color="#fff" />
             </TouchableOpacity>
           </View>

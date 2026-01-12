@@ -127,7 +127,7 @@ const OrdenesCompraScreen = () => {
 
                 <Link
                   href={{
-                    pathname: "/orden-de-compra/pendiente/[id]",
+                    pathname: "/orden-de-compra/recepcionada/[id]",
                     params: { id: item.id },
                   }}
                 >
