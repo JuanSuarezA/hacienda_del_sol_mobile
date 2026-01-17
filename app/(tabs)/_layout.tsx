@@ -111,6 +111,61 @@ export default function TabLayout() {
           href: null,
         }}
       />
+
+      <Tabs.Screen
+        name="pago/aprobada/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="pago/aprobada/[id]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="pago/listado/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="pago/listado/[id]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="pago/pagada/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="pago/pendiente/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="pago/pendiente/[id]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="porteria/ingresos/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="porteria/contratos/index"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

@@ -1,8 +1,10 @@
 import CustomFechaActual from "@/components/CustomFechaActual";
 import CustomHeader from "@/components/CustomHeader";
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import { Link, Redirect, useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,146 +13,116 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type Actividad = {
-  id: string;
+interface PagoReciente {
+  id: number;
   codigo: string;
-  accion: string;
-  usuario: string;
-  color: string;
-};
+  color_estado: string;
+  estado_id: number;
+  linea: string;
+}
 
-const actividades: Actividad[] = [
-  {
-    id: "1",
-    codigo: "SC-0001",
-    accion: "abierta",
-    usuario: "Juan Suárez",
-    color: "#1A73E8",
-  },
-  {
-    id: "2",
-    codigo: "SC-0002",
-    accion: "editada",
-    usuario: "Juan Suárez",
-    color: "#29B6F6",
-  },
-  {
-    id: "3",
-    codigo: "SC-0003",
-    accion: "generada",
-    usuario: "Juan Suárez",
-    color: "#FBC02D",
-  },
-  {
-    id: "4",
-    codigo: "SC-0004",
-    accion: "aprobada",
-    usuario: "Marco Aurelio",
-    color: "#34A853",
-  },
-  {
-    id: "5",
-    codigo: "SC-0005",
-    accion: "rechazada",
-    usuario: "Marco Aurelio",
-    color: "#EA4335",
-  },
-  {
-    id: "6",
-    codigo: "OC-0001",
-    accion: "abierta",
-    usuario: "Juan Suárez",
-    color: "#1A73E8",
-  },
-  {
-    id: "7",
-    codigo: "OC-0002",
-    accion: "editada",
-    usuario: "Juan Suárez",
-    color: "#29B6F6",
-  },
-  {
-    id: "8",
-    codigo: "OC-0003",
-    accion: "generada",
-    usuario: "Juan Suárez",
-    color: "#FBC02D",
-  },
-  {
-    id: "9",
-    codigo: "OC-0004",
-    accion: "aprobada",
-    usuario: "Marco Aurelio",
-    color: "#34A853",
-  },
-  {
-    id: "10",
-    codigo: "OC-0004",
-    accion: "aprobada",
-    usuario: "Marco Aurelio",
-    color: "#34A853",
-  },
-  {
-    id: "11",
-    codigo: "OC-0004",
-    accion: "aprobada",
-    usuario: "Marco Aurelio",
-    color: "#34A853",
-  },
-  {
-    id: "12",
-    codigo: "OC-0004",
-    accion: "aprobada",
-    usuario: "Marco Aurelio",
-    color: "#34A853",
-  },
-];
+interface PagoResumen {
+  PENDIENTE: string;
+  APROBADA: string;
+  RECEPCIONADA: string;
+}
 
-const ComprasScreen = () => {
+const PagosScreen = () => {
+  const [resumen, setResumen] = useState<PagoResumen | null>(null);
+  const [pagos, setPagos] = useState<PagoReciente[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchPagosRecientes = async () => {
+    try {
+      setLoading(true);
+      // Reemplaza esta URL por la de tu API real
+
+      const [resumenRes, pagosRes] = await Promise.all([
+        fetch(
+          `https://kleurdigital.xyz/util/solicitud-pagos/query_resumen_mobile.php`
+        ),
+        fetch(
+          `https://kleurdigital.xyz/util/solicitud-pagos/query_actividad_reciente_mobile.php`
+        ),
+      ]);
+      const resumenJson = await resumenRes.json();
+      const pagosJson = await pagosRes.json();
+
+      setResumen(resumenJson.data?.[0] || null);
+      setPagos(pagosJson.data || []); // Guardamos los datos en el estado
+    } catch (error) {
+      console.error("Error obteniendo pagos:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchPagosRecientes();
+    }, [])
+  );
+
+  if (loading && pagos.length === 0) {
+    return (
+      <View style={styles3.loadingContainer}>
+        <ActivityIndicator size="large" color="#E6B34D" />
+      </View>
+    );
+  }
+
+  if (!resumen) {
+    return <Redirect href="/" />;
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <CustomHeader />
         <View style={styles2.content}>
-          <Text style={styles2.title}>Pagos</Text>
+          <Text style={styles2.title}>Solicitud de Pagos</Text>
           <CustomFechaActual />
 
           {/* BOTONES */}
           <View style={styles2.buttons}>
-            <TouchableOpacity
-              style={styles2.button}
-              //onPress={() => router.push("/ordenes_compra")}
-            >
-              <Ionicons name="document-text-outline" size={20} color="#fff" />
-              <Text style={styles2.buttonText}>LISTADO</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles2.button}
-              //onPress={() => router.push("/ordenes_compra/pendientes")}
-            >
-              <Ionicons name="clipboard-outline" size={20} color="#fff" />
-              <Text style={styles2.buttonText}>PENDIENTES</Text>
-            </TouchableOpacity>
+            <Link href={"/pago/listado"} asChild>
+              <TouchableOpacity style={styles2.button}>
+                <Ionicons name="document-text-outline" size={20} color="#fff" />
+                <Text style={styles2.buttonText}>LISTADO</Text>
+              </TouchableOpacity>
+            </Link>
+            <Link href={"/pago/pendiente"} asChild>
+              <TouchableOpacity style={styles2.button}>
+                <Ionicons name="clipboard-outline" size={20} color="#fff" />
+                <Text style={styles2.buttonText}>PENDIENTES</Text>
+              </TouchableOpacity>
+            </Link>
           </View>
         </View>
         <View style={styles.card}>
-          <Text style={styles.title}>Aprobaciones</Text>
+          <Text style={styles.title}>Solicitudes</Text>
           <View style={styles.row}>
-            <Item label="Solicitudes" value="1" />
-            <Item label="Órdenes" value="2" />
-            <Item label="Recepciones" value="3" />
+            <Link href={"/pago/pendiente"} asChild>
+              <Item label="Pendientes" value={resumen.PENDIENTE} />
+            </Link>
+            <Link href={"/pago/aprobada"} asChild>
+              <Item label="Aprobadas" value={resumen.APROBADA} />
+            </Link>
+            {/* <Link href={"/pago/pagada"} asChild>
+              <Item label="Pagados" value={resumen.RECEPCIONADA} />
+            </Link> */}
           </View>
         </View>
         <View style={styles3.card}>
           <Text style={styles3.title}>Actividad reciente</Text>
-          {actividades.map((item) => (
+          {pagos.map((item) => (
             <View key={item.id} style={styles3.row}>
-              <View style={[styles3.dot, { backgroundColor: item.color }]} />
+              <View
+                style={[styles3.dot, { backgroundColor: item.color_estado }]}
+              />
 
               <Text style={styles3.text}>
-                <Text style={styles3.code}>{item.codigo}</Text> {item.accion}{" "}
-                por {item.usuario}.
+                <Text style={styles3.code}>{item.codigo}</Text> {item.linea}.
               </Text>
             </View>
           ))}
@@ -160,15 +132,22 @@ const ComprasScreen = () => {
   );
 };
 
-const Item = ({ label, value }: { label: string; value: string }) => (
-  <View style={styles.item}>
+const Item = ({
+  label,
+  value,
+  ...props
+}: {
+  label: string;
+  value: string;
+  [key: string]: any;
+}) => (
+  <TouchableOpacity {...props} style={[styles.item, props.style]}>
     <Text style={styles.label}>{label}</Text>
     <Text style={styles.value}>{value}</Text>
-
-    <TouchableOpacity style={styles.button}>
+    <View style={styles.button}>
       <Text style={styles.buttonText}>Revisar</Text>
-    </TouchableOpacity>
-  </View>
+    </View>
+  </TouchableOpacity>
 );
 
 const styles = StyleSheet.create({
@@ -201,11 +180,11 @@ const styles = StyleSheet.create({
 
   item: {
     alignItems: "center",
-    width: "30%",
+    width: "50%",
   },
 
   label: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#777",
     marginBottom: 6,
   },
@@ -221,7 +200,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "#12521C",
     paddingVertical: 6,
-    paddingHorizontal: 16,
+    paddingHorizontal: 40,
     borderRadius: 20,
   },
 
@@ -275,6 +254,12 @@ const styles2 = StyleSheet.create({
 });
 
 const styles3 = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F4F6F8",
+  },
   card: {
     backgroundColor: "#FFFFFF",
     borderRadius: 20,
@@ -321,4 +306,4 @@ const styles3 = StyleSheet.create({
   },
 });
 
-export default ComprasScreen;
+export default PagosScreen;

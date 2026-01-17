@@ -9,7 +9,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Double, Int32 } from "react-native/Libraries/Types/CodegenTypes";
 
 interface Inicio {
   BOVINO: string;
@@ -29,6 +28,7 @@ interface Inicio {
 const HomeScreen = () => {
   const [resumen, setResumen] = useState<Inicio | null>(null);
   const [loading, setLoading] = useState(true);
+
   const fetchInicio = async () => {
     try {
       setLoading(true);
@@ -36,6 +36,9 @@ const HomeScreen = () => {
         fetch(`https://kleurdigital.xyz/util/inicio/query_inicio_mobile.php`),
       ]);
       const resumenJson = await inicioRes.json();
+      if (!inicioRes.ok) {
+        throw new Error("Error en la respuesta del servidor");
+      }
       setResumen(resumenJson.data?.[0] || null);
     } catch (error) {
       console.error("Error obteniendo ordenes:", error);
@@ -43,10 +46,11 @@ const HomeScreen = () => {
       setLoading(false);
     }
   };
+
   useFocusEffect(
     useCallback(() => {
       fetchInicio();
-    }, [])
+    }, []),
   );
 
   if (loading) {
@@ -58,7 +62,11 @@ const HomeScreen = () => {
   }
 
   if (!resumen) {
-    console.log("No cargo");
+    return (
+      <View style={styles2.loadingContainer}>
+        <Text>No se pudo cargar la información</Text>
+      </View>
+    );
   }
 
   return (
@@ -195,7 +203,7 @@ const HomeScreen = () => {
               <FinanceCard
                 label="INGRESOS"
                 value={Number(resumen?.INGRESO_MES || 0).toLocaleString(
-                  "es-BO"
+                  "es-BO",
                 )}
               />
               <FinanceCard
@@ -229,9 +237,9 @@ const PotreroRow = ({
   percentage,
 }: {
   label: string;
-  value: Int32;
+  value: number;
   color: string;
-  percentage: Double;
+  percentage: number;
 }) => (
   <View style={styles.potreroRowContainer}>
     <Text style={styles.potreroLabel}>{label}</Text>
