@@ -31,13 +31,14 @@ const PagosScreen = () => {
   // 2. Definir estados para los datos, la carga y el error
   const [pagos, setPagos] = useState<OrdenCompra[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchPagos = async () => {
     try {
       setLoading(true);
       // Reemplaza esta URL por la de tu API real
       const response = await fetch(
-        "https://kleurdigital.xyz/util/solicitud-pagos/query_mobile.php"
+        "https://kleurdigital.xyz/util/solicitud-pagos/query_mobile.php",
       );
       const json = await response.json();
 
@@ -49,10 +50,19 @@ const PagosScreen = () => {
     }
   };
 
+  const pagosFiltrados = pagos.filter((item) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      item.codigo.toLowerCase().includes(query) ||
+      item.proveedor.toLowerCase().includes(query) ||
+      item.solicitante.toLowerCase().includes(query)
+    );
+  });
+
   useFocusEffect(
     useCallback(() => {
       fetchPagos();
-    }, [])
+    }, []),
   );
 
   if (loading && pagos.length === 0) {
@@ -70,13 +80,6 @@ const PagosScreen = () => {
       {/* Fila de Título y Botón Atrás */}
       <View style={styles3.headerContainer}>
         <View style={styles3.topRow}>
-          {/* <TouchableOpacity
-            style={styles3.backButton}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="arrow-back" size={24} color="white" />
-          </TouchableOpacity> */}
-
           <Link style={styles3.backButton} href={"/pago"}>
             <Ionicons name="arrow-back" size={24} color="white" />
           </Link>
@@ -97,13 +100,15 @@ const PagosScreen = () => {
             style={styles3.input}
             placeholder="Busca aquí..."
             placeholderTextColor="#888"
+            value={searchQuery} // Conectamos el valor
+            onChangeText={(text) => setSearchQuery(text)} // Actualizamos el estado
           />
         </View>
       </View>
 
       <View style={styles2.scrollContainer}>
         <FlatList
-          data={pagos}
+          data={pagosFiltrados}
           renderItem={({ item }) => (
             <View style={styles3.card}>
               <View style={styles3.cardHeader}>

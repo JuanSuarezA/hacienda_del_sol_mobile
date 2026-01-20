@@ -1,27 +1,24 @@
 import LogoHorizontal from "@/assets/images/logo/Logo-Horizontal.svg";
 import Notificaciones from "@/assets/images/logo/Notificaciones-Inactivo.svg";
+import { Link } from "expo-router";
 import React from "react";
 import { Image, StyleSheet, View } from "react-native";
 
 export default function CustomHeader() {
   return (
     <View style={styles.container}>
-      {/* HEADER VERDE */}
       <View style={styles.header}>
-        {/* Logo y título */}
         <View style={styles.logoContainer}>
-          <LogoHorizontal />
-          {/* <View style={{ marginLeft: 8 }}>
-            <Text style={styles.logoText}>HACIENDA</Text>
-            <Text style={styles.logoText}>DEL SOL</Text>
-          </View> */}
+          <Link href="/(tabs)">
+            <LogoHorizontal />
+          </Link>
         </View>
-
-        {/* Acciones */}
         <View style={styles.actions}>
-          <Notificaciones />
+          <Link href="/notificaciones">
+            <Notificaciones />
+          </Link>
           <Image
-            source={{ uri: "https://i.pravatar.cc/150" }}
+            source={require("@/assets/images/varios/user.png")}
             style={styles.avatar}
           />
         </View>

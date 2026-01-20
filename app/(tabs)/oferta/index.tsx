@@ -1,8 +1,11 @@
+import OfertaCompra from "@/assets/images/varios/ofertas-compra.svg";
+import OfertaVenta from "@/assets/images/varios/ofertas-venta.svg";
 import CustomFechaActual from "@/components/CustomFechaActual";
 import CustomHeader from "@/components/CustomHeader";
-import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import { Link, Redirect, useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,102 +14,67 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type Actividad = {
-  id: string;
+interface OrdenCompraReciente {
+  id: number;
   codigo: string;
-  accion: string;
-  usuario: string;
-  color: string;
-};
+  color_estado: string;
+  estado_id: number;
+  linea: string;
+}
 
-const actividades: Actividad[] = [
-  {
-    id: "1",
-    codigo: "SC-0001",
-    accion: "abierta",
-    usuario: "Juan Suárez",
-    color: "#1A73E8",
-  },
-  {
-    id: "2",
-    codigo: "SC-0002",
-    accion: "editada",
-    usuario: "Juan Suárez",
-    color: "#29B6F6",
-  },
-  {
-    id: "3",
-    codigo: "SC-0003",
-    accion: "generada",
-    usuario: "Juan Suárez",
-    color: "#FBC02D",
-  },
-  {
-    id: "4",
-    codigo: "SC-0004",
-    accion: "aprobada",
-    usuario: "Marco Aurelio",
-    color: "#34A853",
-  },
-  {
-    id: "5",
-    codigo: "SC-0005",
-    accion: "rechazada",
-    usuario: "Marco Aurelio",
-    color: "#EA4335",
-  },
-  {
-    id: "6",
-    codigo: "OC-0001",
-    accion: "abierta",
-    usuario: "Juan Suárez",
-    color: "#1A73E8",
-  },
-  {
-    id: "7",
-    codigo: "OC-0002",
-    accion: "editada",
-    usuario: "Juan Suárez",
-    color: "#29B6F6",
-  },
-  {
-    id: "8",
-    codigo: "OC-0003",
-    accion: "generada",
-    usuario: "Juan Suárez",
-    color: "#FBC02D",
-  },
-  {
-    id: "9",
-    codigo: "OC-0004",
-    accion: "aprobada",
-    usuario: "Marco Aurelio",
-    color: "#34A853",
-  },
-  {
-    id: "10",
-    codigo: "OC-0004",
-    accion: "aprobada",
-    usuario: "Marco Aurelio",
-    color: "#34A853",
-  },
-  {
-    id: "11",
-    codigo: "OC-0004",
-    accion: "aprobada",
-    usuario: "Marco Aurelio",
-    color: "#34A853",
-  },
-  {
-    id: "12",
-    codigo: "OC-0004",
-    accion: "aprobada",
-    usuario: "Marco Aurelio",
-    color: "#34A853",
-  },
-];
+interface OrdenResumen {
+  PENDIENTE_C: string;
+  PENDIENTE_V: string;
+}
 
 const ComprasScreen = () => {
+  const [resumen, setResumen] = useState<OrdenResumen | null>(null);
+  const [ordenes, setOrdenes] = useState<OrdenCompraReciente[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchOrdenesRecientes = async () => {
+    try {
+      setLoading(true);
+      // Reemplaza esta URL por la de tu API real
+
+      const [resumenRes, ordenesRes] = await Promise.all([
+        fetch(
+          `https://kleurdigital.xyz/util/solicitud-oferta/query_resumen_mobile.php`,
+        ),
+        fetch(
+          `https://kleurdigital.xyz/util/solicitud-oferta/query_actividad_reciente_mobile.php`,
+        ),
+      ]);
+      const resumenJson = await resumenRes.json();
+      const ordenesJson = await ordenesRes.json();
+
+      setResumen(resumenJson.data?.[0] || null);
+      setOrdenes(ordenesJson.data || []); // Guardamos los datos en el estado
+    } catch (error) {
+      console.error("Error obteniendo ordenes:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchOrdenesRecientes();
+    }, []),
+  );
+
+  if (loading && ordenes.length === 0) {
+    return (
+      <View style={styles3.loadingContainer}>
+        <ActivityIndicator size="large" color="#E6B34D" />
+      </View>
+    );
+  }
+
+  if (!resumen) {
+    return <Redirect href="/" />;
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -117,40 +85,41 @@ const ComprasScreen = () => {
 
           {/* BOTONES */}
           <View style={styles2.buttons}>
-            <TouchableOpacity
-              style={styles2.button}
-              //onPress={() => router.push("/ordenes_compra")}
-            >
-              <Ionicons name="document-text-outline" size={20} color="#fff" />
-              <Text style={styles2.buttonText}>LISTADO</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles2.button}
-              //onPress={() => router.push("/ordenes_compra/pendientes")}
-            >
-              <Ionicons name="clipboard-outline" size={20} color="#fff" />
-              <Text style={styles2.buttonText}>PENDIENTES</Text>
-            </TouchableOpacity>
+            <Link href={"/oferta/compra"} asChild>
+              <TouchableOpacity style={styles2.button}>
+                <OfertaCompra />
+                <Text style={styles2.buttonText}>COMPRA</Text>
+              </TouchableOpacity>
+            </Link>
+            <Link href={"/oferta/venta"} asChild>
+              <TouchableOpacity style={styles2.button}>
+                <OfertaVenta />
+                <Text style={styles2.buttonText}>VENTA</Text>
+              </TouchableOpacity>
+            </Link>
           </View>
         </View>
         <View style={styles.card}>
-          <Text style={styles.title}>Aprobaciones</Text>
+          <Text style={styles.title}>Ofertas Pendientes</Text>
           <View style={styles.row}>
-            <Item label="Solicitudes" value="1" />
-            <Item label="Órdenes" value="2" />
-            <Item label="Recepciones" value="3" />
+            <Link href={"/oferta/compra-pendiente"} asChild>
+              <Item label="Compra" value={resumen.PENDIENTE_C} />
+            </Link>
+            <Link href={"/orden-de-compra/aprobada"} asChild>
+              <Item label="Venta" value={resumen.PENDIENTE_V} />
+            </Link>
           </View>
         </View>
         <View style={styles3.card}>
           <Text style={styles3.title}>Actividad reciente</Text>
-          {actividades.map((item) => (
+          {ordenes.map((item) => (
             <View key={item.id} style={styles3.row}>
-              <View style={[styles3.dot, { backgroundColor: item.color }]} />
+              <View
+                style={[styles3.dot, { backgroundColor: item.color_estado }]}
+              />
 
               <Text style={styles3.text}>
-                <Text style={styles3.code}>{item.codigo}</Text> {item.accion}{" "}
-                por {item.usuario}.
+                <Text style={styles3.code}>{item.codigo}</Text> {item.linea}.
               </Text>
             </View>
           ))}
@@ -160,15 +129,22 @@ const ComprasScreen = () => {
   );
 };
 
-const Item = ({ label, value }: { label: string; value: string }) => (
-  <View style={styles.item}>
+const Item = ({
+  label,
+  value,
+  ...props
+}: {
+  label: string;
+  value: string;
+  [key: string]: any;
+}) => (
+  <TouchableOpacity {...props} style={[styles.item, props.style]}>
     <Text style={styles.label}>{label}</Text>
     <Text style={styles.value}>{value}</Text>
-
-    <TouchableOpacity style={styles.button}>
+    <View style={styles.button}>
       <Text style={styles.buttonText}>Revisar</Text>
-    </TouchableOpacity>
-  </View>
+    </View>
+  </TouchableOpacity>
 );
 
 const styles = StyleSheet.create({
@@ -201,11 +177,11 @@ const styles = StyleSheet.create({
 
   item: {
     alignItems: "center",
-    width: "30%",
+    width: "50%",
   },
 
   label: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#777",
     marginBottom: 6,
   },
@@ -275,6 +251,12 @@ const styles2 = StyleSheet.create({
 });
 
 const styles3 = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F4F6F8",
+  },
   card: {
     backgroundColor: "#FFFFFF",
     borderRadius: 20,

@@ -6,6 +6,7 @@ import { Link, useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   StyleSheet,
   Text,
@@ -35,13 +36,14 @@ const IngresosScreen = () => {
   // 2. Definir estados para los datos, la carga y el error
   const [ingresos, setOrdenes] = useState<IngresoSalida[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchIngresos = async () => {
     try {
       setLoading(true);
       // Reemplaza esta URL por la de tu API real
       const response = await fetch(
-        "https://kleurdigital.xyz/util/ingresos-salidas/query_mobile.php"
+        "https://kleurdigital.xyz/util/ingresos-salidas/query_mobile.php",
       );
       const json = await response.json();
 
@@ -53,10 +55,117 @@ const IngresosScreen = () => {
     }
   };
 
+  const ingresosFiltrados = ingresos.filter((item) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      item.codigo.toLowerCase().includes(query) ||
+      item.nombre_chofer.toLowerCase().includes(query) ||
+      item.ci_chofer.toLowerCase().includes(query) ||
+      item.placa_camion.toLowerCase().includes(query)
+    );
+  });
+
+  const handleUpdateStatus = async (id: string, tipo: string) => {
+    try {
+      setLoading(true); // Opcional: mostrar loading mientras la API responde
+
+      const response = await fetch(
+        `https://kleurdigital.xyz/util/ingresos-salidas/ingreso_mobile.php?id=${id}&tipo=${tipo}`,
+      );
+
+      const result = await response.json();
+
+      if (result.estado == "1") {
+        Alert.alert("Éxito", result.mensaje, [
+          {
+            text: "OK",
+            onPress: () => fetchIngresos(), // <--- ESTO REFRESCARÁ LOS DATOS
+          },
+        ]);
+      } else {
+        Alert.alert(
+          "Error",
+          result.message || "No se pudo actualizar la orden.",
+        );
+      }
+    } catch (error) {
+      console.error("Error al actualizar:", error);
+      Alert.alert("Error", "Ocurrió un error de conexión.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderButtons = (item: any) => {
+    switch (item.estado_id) {
+      case 81:
+        switch (item.entrada) {
+          case "":
+            return (
+              <TouchableOpacity
+                style={[styles4.button, styles4.approve]}
+                onPress={() => handleUpdateStatus(item.id, "106")}
+              >
+                <Text style={styles4.buttonText}>PUEDE INGRESAR</Text>
+                <CamionIngresar />
+              </TouchableOpacity>
+            );
+
+          default:
+            return (
+              <>
+                <View style={styles3.codeContainer}>
+                  <View style={[styles3.badge, { backgroundColor: "green" }]}>
+                    <Text style={styles3.badgeText}>INGRESADO</Text>
+                  </View>
+                </View>
+              </>
+            );
+        }
+
+      case 102:
+        switch (item.salida) {
+          case "":
+            return (
+              <TouchableOpacity
+                style={[styles4.button, styles4.reject]}
+                onPress={() => handleUpdateStatus(item.id, "107")}
+              >
+                <Text style={styles4.buttonText}>PUEDE SALIR</Text>
+                <CamionSalir />
+              </TouchableOpacity>
+            );
+
+          default:
+            return (
+              <>
+                <View style={styles3.codeContainer}>
+                  <View style={[styles3.badge, { backgroundColor: "gray" }]}>
+                    <Text style={styles3.badgeText}>DESPACHADO</Text>
+                  </View>
+                </View>
+              </>
+            );
+        }
+
+      case 105:
+        return (
+          <>
+            <View style={styles3.codeContainer}>
+              <View style={[styles3.badge, { backgroundColor: "orange" }]}>
+                <Text style={styles3.badgeText}>{item.estado}</Text>
+              </View>
+            </View>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
   useFocusEffect(
     useCallback(() => {
       fetchIngresos();
-    }, [])
+    }, []),
   );
 
   if (loading && ingresos.length === 0) {
@@ -67,10 +176,6 @@ const IngresosScreen = () => {
     );
   }
 
-  // if (!ordenes) {
-  //   return <Redirect href="/" />;
-  // }
-
   return (
     <SafeAreaView style={styles2.container}>
       <CustomHeader />
@@ -78,12 +183,6 @@ const IngresosScreen = () => {
       {/* Fila de Título y Botón Atrás */}
       <View style={styles3.headerContainer}>
         <View style={styles3.topRow}>
-          {/* <TouchableOpacity
-            style={styles3.backButton}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="arrow-back" size={24} color="white" />
-          </TouchableOpacity> */}
           <Link style={styles3.backButton} href={"/porteria"}>
             <Ionicons name="arrow-back" size={24} color="white" />
           </Link>
@@ -106,13 +205,15 @@ const IngresosScreen = () => {
             style={styles3.input}
             placeholder="Busca aquí..."
             placeholderTextColor="#888"
+            value={searchQuery} // Conectamos el valor
+            onChangeText={(text) => setSearchQuery(text)} // Actualizamos el estado
           />
         </View>
       </View>
 
       <View style={styles2.scrollContainer}>
         <FlatList
-          data={ingresos}
+          data={ingresosFiltrados}
           renderItem={({ item }) => (
             <View style={styles3.card}>
               <View style={styles3.cardHeader}>
@@ -153,73 +254,6 @@ const IngresosScreen = () => {
       </View>
     </SafeAreaView>
   );
-};
-
-const renderButtons = (item: any) => {
-  switch (item.estado_id) {
-    case 81:
-      switch (item.entrada) {
-        case "":
-          return (
-            <TouchableOpacity
-              style={[styles4.button, styles4.approve]}
-              //onPress={() => handleUpdateStatus("1")}
-            >
-              <Text style={styles4.buttonText}>PUEDE INGRESAR</Text>
-              <CamionIngresar />
-            </TouchableOpacity>
-          );
-
-        default:
-          return (
-            <>
-              <View style={styles3.codeContainer}>
-                <View style={[styles3.badge, { backgroundColor: "green" }]}>
-                  <Text style={styles3.badgeText}>INGRESADO</Text>
-                </View>
-              </View>
-            </>
-          );
-      }
-
-    case 102:
-      switch (item.salida) {
-        case "":
-          return (
-            <TouchableOpacity
-              style={[styles4.button, styles4.reject]}
-              //onPress={() => handleUpdateStatus("1")}
-            >
-              <Text style={styles4.buttonText}>PUEDE SALIR</Text>
-              <CamionSalir />
-            </TouchableOpacity>
-          );
-
-        default:
-          return (
-            <>
-              <View style={styles3.codeContainer}>
-                <View style={[styles3.badge, { backgroundColor: "gray" }]}>
-                  <Text style={styles3.badgeText}>DESPACHADO</Text>
-                </View>
-              </View>
-            </>
-          );
-      }
-
-    case 105:
-      return (
-        <>
-          <View style={styles3.codeContainer}>
-            <View style={[styles3.badge, { backgroundColor: "orange" }]}>
-              <Text style={styles3.badgeText}>{item.estado}</Text>
-            </View>
-          </View>
-        </>
-      );
-    default:
-      return null;
-  }
 };
 
 const styles3 = StyleSheet.create({

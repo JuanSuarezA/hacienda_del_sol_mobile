@@ -32,13 +32,14 @@ const OrdenesCompraScreen = () => {
   // 2. Definir estados para los datos, la carga y el error
   const [ordenes, setOrdenes] = useState<OrdenCompra[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchOrdenes = async () => {
     try {
       setLoading(true);
       // Reemplaza esta URL por la de tu API real
       const response = await fetch(
-        "https://kleurdigital.xyz/util/recepciones-oc/query_recepcionadas_mobile.php"
+        "https://kleurdigital.xyz/util/recepciones-oc/query_recepcionadas_mobile.php",
       );
       const json = await response.json();
 
@@ -50,10 +51,20 @@ const OrdenesCompraScreen = () => {
     }
   };
 
+  // Esta constante se actualizará automáticamente cuando cambie 'searchQuery' o 'ordenes'
+  const ordenesFiltradas = ordenes.filter((item) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      item.codigo.toLowerCase().includes(query) ||
+      item.proveedor.toLowerCase().includes(query) ||
+      item.solicitante.toLowerCase().includes(query)
+    );
+  });
+
   useFocusEffect(
     useCallback(() => {
       fetchOrdenes();
-    }, [])
+    }, []),
   );
 
   if (loading && ordenes.length === 0) {
@@ -64,10 +75,6 @@ const OrdenesCompraScreen = () => {
     );
   }
 
-  // if (!ordenes) {
-  //   return <Redirect href="/" />;
-  // }
-
   return (
     <SafeAreaView style={styles2.container}>
       <CustomHeader />
@@ -75,12 +82,6 @@ const OrdenesCompraScreen = () => {
       {/* Fila de Título y Botón Atrás */}
       <View style={styles3.headerContainer}>
         <View style={styles3.topRow}>
-          {/* <TouchableOpacity
-            style={styles3.backButton}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="arrow-back" size={24} color="white" />
-          </TouchableOpacity> */}
           <Link style={styles3.backButton} href={"/orden-de-compra"}>
             <Ionicons name="arrow-back" size={24} color="white" />
           </Link>
@@ -103,13 +104,15 @@ const OrdenesCompraScreen = () => {
             style={styles3.input}
             placeholder="Busca aquí..."
             placeholderTextColor="#888"
+            value={searchQuery} // Conectamos el valor
+            onChangeText={(text) => setSearchQuery(text)} // Actualizamos el estado
           />
         </View>
       </View>
 
       <View style={styles2.scrollContainer}>
         <FlatList
-          data={ordenes}
+          data={ordenesFiltradas}
           renderItem={({ item }) => (
             <View style={styles3.card}>
               <View style={styles3.cardHeader}>

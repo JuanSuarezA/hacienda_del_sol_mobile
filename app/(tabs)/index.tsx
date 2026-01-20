@@ -1,3 +1,7 @@
+import Diesel from "@/assets/images/home/diesel.svg";
+import Heno from "@/assets/images/home/heno.svg";
+import Nucleo from "@/assets/images/home/nucleo.svg";
+import Sorgo from "@/assets/images/home/sorgo.svg";
 import CustomHeader from "@/components/CustomHeader";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
@@ -6,6 +10,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -24,28 +29,99 @@ interface Inicio {
   EGRESO_MES: string;
   INGRESO_MES: string;
 }
+interface Potrero {
+  id: number;
+  ubicacion: string;
+  stock: number;
+  capacidad: number;
+  color: string;
+}
 
 const HomeScreen = () => {
   const [resumen, setResumen] = useState<Inicio | null>(null);
+  const [potreros, setPotreros] = useState<Potrero[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [filtroSeleccionado, setFiltroSeleccionado] = useState<string | null>(
+    null,
+  );
 
   const fetchInicio = async () => {
     try {
       setLoading(true);
-      const [inicioRes] = await Promise.all([
+      const [inicioRes, potreroRes] = await Promise.all([
         fetch(`https://kleurdigital.xyz/util/inicio/query_inicio_mobile.php`),
+        fetch(
+          `https://kleurdigital.xyz/util/inicio/queryUbicacion_mobile.php?u=A`,
+        ),
       ]);
       const resumenJson = await inicioRes.json();
-      if (!inicioRes.ok) {
+      const potrerosJson = await potreroRes.json();
+
+      setResumen(resumenJson.data?.[0] || null);
+      const listaPotreros = potrerosJson.data || [];
+      setPotreros(listaPotreros);
+
+      if (!inicioRes.ok && !potreroRes) {
         throw new Error("Error en la respuesta del servidor");
       }
-      setResumen(resumenJson.data?.[0] || null);
+
+      if (listaPotreros.length > 0) {
+        const inicial =
+          listaPotreros[0].ubicacion.toLowerCase() === "enfermeria"
+            ? "Enfermería"
+            : listaPotreros[0].ubicacion.charAt(0).toUpperCase();
+        setFiltroSeleccionado(inicial);
+      }
     } catch (error) {
       console.error("Error obteniendo ordenes:", error);
     } finally {
       setLoading(false);
     }
   };
+
+  const CATEGORIAS_ESPECIALES = ["Enfermeria", "Temporal"];
+
+  // Función auxiliar para normalizar nombres
+  const obtenerCategoria = (ubicacion: string) => {
+    const nombreLower = ubicacion.toLowerCase();
+
+    // Buscamos si la ubicación empieza con alguna de nuestras palabras especiales
+    const especial = CATEGORIAS_ESPECIALES.find((cat) =>
+      nombreLower.startsWith(cat.toLowerCase()),
+    );
+
+    // Si es especial, devolvemos la palabra correcta (ej: "Temporal")
+    // Si no, devolvemos solo la inicial (ej: "A")
+    return especial
+      ? especial.charAt(0).toUpperCase() + especial.slice(1)
+      : ubicacion.charAt(0).toUpperCase();
+  };
+
+  const categoriasDisponibles = Array.from(
+    new Set(potreros.map((p) => obtenerCategoria(p.ubicacion))),
+  ).sort((a, b) => {
+    // Ordenar: Letras primero, palabras especiales al final
+    const aEsEspecial = CATEGORIAS_ESPECIALES.some((c) =>
+      a.toLowerCase().startsWith(c.toLowerCase()),
+    );
+    const bEsEspecial = CATEGORIAS_ESPECIALES.some((c) =>
+      b.toLowerCase().startsWith(c.toLowerCase()),
+    );
+
+    if (aEsEspecial && !bEsEspecial) return 1;
+    if (!aEsEspecial && bEsEspecial) return -1;
+    return a.localeCompare(b);
+  });
+
+  const potrerosFiltrados = potreros.filter((p) => {
+    if (!filtroSeleccionado) return true;
+
+    const categoriaDelItem = obtenerCategoria(p.ubicacion);
+
+    // Solo mostramos si la categoría calculada coincide con el botón presionado
+    return categoriaDelItem === filtroSeleccionado;
+  });
 
   useFocusEffect(
     useCallback(() => {
@@ -126,52 +202,57 @@ const HomeScreen = () => {
           </View>
         </View>
 
-        {/* SECCIÓN MEDIA: GANADO POR POTRERO */}
         <View style={styles.potreroCard}>
           <Text style={styles.sectionTitle}>Ganado por potrero</Text>
-          <PotreroRow
-            label="POTRERO 1"
-            value={690}
-            color="#D9A347"
-            percentage={0.7}
-          />
-          <PotreroRow
-            label="POTRERO 2"
-            value={950}
-            color="#1E732E"
-            percentage={0.9}
-          />
-          <PotreroRow
-            label="POTRERO 3"
-            value={690}
-            color="#0A2E14"
-            percentage={0.7}
-          />
-          <PotreroRow
-            label="POTRERO 4"
-            value={950}
-            color="#D9A347"
-            percentage={0.9}
-          />
-          <PotreroRow
-            label="POTRERO 5"
-            value={690}
-            color="#1E732E"
-            percentage={0.7}
-          />
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles3.row}
+          >
+            {categoriasDisponibles.map((cat) => (
+              <TouchableOpacity
+                key={cat}
+                onPress={() => setFiltroSeleccionado(cat)}
+                style={[
+                  styles3.potrero,
+                  // Si el nombre es largo (Enfermería, Temporal), el botón se estira
+                  cat.length > 1 && { width: "auto", paddingHorizontal: 16 },
+                  filtroSeleccionado === cat && styles3.active,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles3.potreroText,
+                    filtroSeleccionado === cat && { color: "#FFF" },
+                  ]}
+                >
+                  {cat}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          {potrerosFiltrados.map((item) => (
+            <PotreroRow
+              key={item.id}
+              label={item.ubicacion}
+              value={item.stock}
+              color={item.color}
+              percentage={item.capacidad}
+            />
+          ))}
         </View>
 
         {/* SECCIÓN INFERIOR: RECURSOS */}
         <View style={styles.recursos}>
           <View style={styles.row}>
             <ResourceCard
-              icon="⭕"
+              icon={<Heno />}
               label="HENO"
               value={Number(resumen?.HENO || 0).toLocaleString("es-BO")}
               unit="toneladas"
             />
             <ResourceCard
-              icon="➕"
+              icon={<Nucleo />}
               label="NÚCLEO"
               value={Number(resumen?.NUCLEO || 0).toLocaleString("es-BO")}
               unit="toneladas"
@@ -179,13 +260,13 @@ const HomeScreen = () => {
           </View>
           <View style={styles.row}>
             <ResourceCard
-              icon="🌱"
+              icon={<Sorgo />}
               label="SORGO"
               value={Number(resumen?.SORGO || 0).toLocaleString("es-BO")}
               unit="toneladas"
             />
             <ResourceCard
-              icon="⛽"
+              icon={<Diesel />}
               label="DIÉSEL"
               value={Number(resumen?.DIESEL || 0).toLocaleString("es-BO")}
               unit="litros"
@@ -261,14 +342,16 @@ const ResourceCard = ({
   value,
   unit,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   value: string;
   unit: string;
 }) => (
   <View style={styles.resourceCard}>
     <View style={styles.resourceHeader}>
-      <Text style={{ fontSize: 20 }}>{icon}</Text>
+      <View style={{ width: 24, height: 24, justifyContent: "center" }}>
+        {icon}
+      </View>
       <Text style={styles.resourceLabel}>{label}</Text>
     </View>
     <Text style={styles.resourceValue}>
@@ -397,7 +480,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 12,
   },
-  potreroLabel: { width: 80, fontSize: 12, color: "#666" },
+  potreroLabel: { width: 40, fontSize: 12, color: "#666" },
   barBackground: {
     flex: 1,
     height: 12,
@@ -494,6 +577,48 @@ const styles2 = StyleSheet.create({
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
+  },
+});
+
+const styles3 = StyleSheet.create({
+  row: {
+    flexDirection: "row",
+    marginVertical: 10,
+  },
+
+  potrero: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: "#f2f2f2",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 8,
+  },
+
+  active: {
+    backgroundColor: "#0f4d1c",
+  },
+
+  potreroText: {
+    color: "#000",
+    fontWeight: "600",
+  },
+
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: "#f2f2f2",
+    marginRight: 10,
+  },
+
+  cta: {
+    backgroundColor: "#0f4d1c",
+    padding: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 20,
   },
 });
 

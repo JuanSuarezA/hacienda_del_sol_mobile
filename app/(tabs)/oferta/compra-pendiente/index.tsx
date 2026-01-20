@@ -1,6 +1,6 @@
 import CustomHeader from "@/components/CustomHeader";
 import { Ionicons } from "@expo/vector-icons";
-import { Link, useFocusEffect } from "expo-router";
+import { Link, useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -18,31 +18,32 @@ interface OrdenCompra {
   proveedor: string;
   nit: string;
   color_estado: string;
-  solicitante: string;
   estado_id: number;
   estado: string;
-  tipo_orden: string;
-  tipo_pago: string;
-  fecha: string;
-  monto: number;
+  lugar_compra: string;
+  propiedad: string;
+  peso_promedio: string;
+  solicitante: string;
 }
 
-const PagosScreen = () => {
+const OrdenesCompraScreen = () => {
+  const router = useRouter();
+
   // 2. Definir estados para los datos, la carga y el error
-  const [pagos, setPagos] = useState<OrdenCompra[]>([]);
+  const [ordenes, setOrdenes] = useState<OrdenCompra[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const fetchPagos = async () => {
+  const fetchOrdenes = async () => {
     try {
       setLoading(true);
       // Reemplaza esta URL por la de tu API real
       const response = await fetch(
-        "https://kleurdigital.xyz/util/aprobaciones-sp/query_mobile.php",
+        "https://kleurdigital.xyz/util/aprobaciones-oferta/query_mobile.php",
       );
       const json = await response.json();
 
-      setPagos(json.data || []); // Guardamos los datos en el estado
+      setOrdenes(json.data || []); // Guardamos los datos en el estado
     } catch (error) {
       console.error("Error obteniendo ordenes:", error);
     } finally {
@@ -50,7 +51,8 @@ const PagosScreen = () => {
     }
   };
 
-  const pagosFiltrados = pagos.filter((item) => {
+  // Esta constante se actualizará automáticamente cuando cambie 'searchQuery' o 'ordenes'
+  const ordenesFiltradas = ordenes.filter((item) => {
     const query = searchQuery.toLowerCase();
     return (
       item.codigo.toLowerCase().includes(query) ||
@@ -61,11 +63,11 @@ const PagosScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchPagos();
+      fetchOrdenes();
     }, []),
   );
 
-  if (loading && pagos.length === 0) {
+  if (loading && ordenes.length === 0) {
     return (
       <View style={styles3.loadingContainer}>
         <ActivityIndicator size="large" color="#E6B34D" />
@@ -80,12 +82,14 @@ const PagosScreen = () => {
       {/* Fila de Título y Botón Atrás */}
       <View style={styles3.headerContainer}>
         <View style={styles3.topRow}>
-          <Link style={styles3.backButton} href={"/pago"}>
+          <Link style={styles3.backButton} href={"/oferta"}>
             <Ionicons name="arrow-back" size={24} color="white" />
           </Link>
           <View style={styles3.titleWrapper}>
-            <Text style={styles3.headerTitle}>Pagos</Text>
-            <Text style={styles3.headerSubtitle}>Pagos Pendientes</Text>
+            <Text style={styles3.headerTitle}>Ofertas de Compra</Text>
+            <Text style={styles3.headerSubtitle}>
+              Listado de Ofertas Pendientes
+            </Text>
           </View>
         </View>
         {/* Buscador */}
@@ -108,7 +112,7 @@ const PagosScreen = () => {
 
       <View style={styles2.scrollContainer}>
         <FlatList
-          data={pagosFiltrados}
+          data={ordenesFiltradas}
           renderItem={({ item }) => (
             <View style={styles3.card}>
               <View style={styles3.cardHeader}>
@@ -126,7 +130,7 @@ const PagosScreen = () => {
 
                 <Link
                   href={{
-                    pathname: "/pago/pendiente/[id]",
+                    pathname: "/oferta/compra-pendiente/[id]",
                     params: { id: item.id },
                   }}
                 >
@@ -143,16 +147,12 @@ const PagosScreen = () => {
                 <Text style={styles3.value}>{item.proveedor}</Text>
               </View>
               <View style={styles3.infoRow}>
-                <Text style={styles3.label}>Fecha de Pago: </Text>
-                <Text style={styles3.value}>{item.fecha}</Text>
-              </View>
-              <View style={styles3.infoRow}>
-                <Text style={styles3.label}>Monto: </Text>
-                <Text style={styles3.value}>{item.monto}</Text>
+                <Text style={styles3.label}>Lugar: </Text>
+                <Text style={styles3.value}>{item.lugar_compra}</Text>
               </View>
             </View>
           )}
-          onRefresh={fetchPagos}
+          onRefresh={fetchOrdenes}
           refreshing={loading}
         />
       </View>
@@ -231,7 +231,7 @@ const styles3 = StyleSheet.create({
   badgeText: { color: "#FFF", fontSize: 10, fontWeight: "bold" },
 
   infoRow: { flexDirection: "row", marginBottom: 5 },
-  label: { fontSize: 16, color: "#888", width: 120 },
+  label: { fontSize: 16, color: "#888", width: 90 },
   value: { fontSize: 16, color: "#333", fontWeight: "500" },
 });
 
@@ -245,4 +245,25 @@ const styles2 = StyleSheet.create({
   },
 });
 
-export default PagosScreen;
+// const styles = StyleSheet.create({
+//   precio: {
+//     fontWeight: "bold",
+//   },
+//   title: {
+//     fontWeight: "bold",
+//     fontSize: 20,
+//   },
+//   caja: {
+//     marginTop: 10,
+//     marginLeft: 20,
+//     marginRight: 20,
+//     marginBottom: 10,
+//   },
+//   caja2: {
+//     flexDirection: "row",
+//     justifyContent: "space-between",
+//     marginTop: 8,
+//   },
+// });
+
+export default OrdenesCompraScreen;

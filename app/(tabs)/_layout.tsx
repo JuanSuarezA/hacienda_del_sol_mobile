@@ -64,6 +64,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="notificaciones"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="orden-de-compra/listado/index"
         options={{
           href: null,
@@ -162,6 +168,90 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="porteria/contratos/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="despacho/listado/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="despacho/listado/[id]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="despacho/pendiente/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="despacho/pendiente/[id]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="despacho/por-cargar/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="despacho/por-cargar/[id]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="despacho/por-despachar/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="despacho/por-despachar/[id]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="oferta/compra/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="oferta/compra/[id]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="oferta/compra-pendiente/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="oferta/compra-pendiente/[id]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="oferta/venta/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="oferta/venta/[id]"
         options={{
           href: null,
         }}

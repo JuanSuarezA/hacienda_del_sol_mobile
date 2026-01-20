@@ -19,13 +19,13 @@ interface IngresoReciente {
   color_estado: string;
   descripcion: string;
   placa_camion: string;
+  nombre_descripcion: string;
   fecha: string;
 }
 
 interface PagoResumen {
-  PENDIENTE: string;
-  APROBADA: string;
-  RECEPCIONADA: string;
+  CAMIONES: string;
+  CONTRATOS: string;
 }
 
 const IngresosScreen = () => {
@@ -40,7 +40,7 @@ const IngresosScreen = () => {
 
       const [resumenRes, ingresosRes] = await Promise.all([
         fetch(
-          `https://kleurdigital.xyz/util/solicitud-pagos/query_resumen_mobile.php`,
+          `https://kleurdigital.xyz/util/ingresos-salidas/query_resumen_mobile.php`,
         ),
         fetch(
           `https://kleurdigital.xyz/util/ingresos-salidas/query_actividad_reciente_mobile.php`,
@@ -107,14 +107,11 @@ const IngresosScreen = () => {
           </Text>
           <View style={styles.row}>
             <Link href={"/pago/pendiente"} asChild>
-              <Item label="Pendientes" value={resumen.PENDIENTE} />
+              <Item label="Camiones" value={resumen.CAMIONES} />
             </Link>
             <Link href={"/pago/aprobada"} asChild>
-              <Item label="Aprobadas" value={resumen.APROBADA} />
+              <Item label="Contratos" value={resumen.CONTRATOS} />
             </Link>
-            {/* <Link href={"/pago/pagada"} asChild>
-              <Item label="Pagados" value={resumen.RECEPCIONADA} />
-            </Link> */}
           </View>
         </View>
         <View style={styles3.card}>
@@ -126,9 +123,9 @@ const IngresosScreen = () => {
               />
 
               <Text style={styles3.text}>
-                <Text style={styles3.code}>{item.fecha}</Text>
-                {" Camion "}
-                {item.placa_camion} {item.descripcion}.
+                <Text style={styles3.code}>{item.fecha}</Text>{" "}
+                {item.nombre_descripcion} {item.placa_camion} {item.descripcion}
+                .
               </Text>
             </View>
           ))}
@@ -148,11 +145,8 @@ const Item = ({
   [key: string]: any;
 }) => (
   <TouchableOpacity {...props} style={[styles.item, props.style]}>
-    <Text style={styles.label}>{label}</Text>
     <Text style={styles.value}>{value}</Text>
-    <View style={styles.button}>
-      <Text style={styles.buttonText}>Revisar</Text>
-    </View>
+    <Text style={styles.label}>{label}</Text>
   </TouchableOpacity>
 );
 
