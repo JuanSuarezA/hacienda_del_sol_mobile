@@ -145,7 +145,7 @@ const OrdenesCompraScreen = () => {
       setLoading(true); // Opcional: mostrar loading mientras la API responde
 
       const response = await fetch(
-        `https://kleurdigital.xyz/util/recepciones-oc/editarOrden_mobile.php?id=${id}&tipo=${tipo}`,
+        `https://kleurdigital.xyz/util/aprobaciones-oferta-venta/editarOrden_mobile.php?id=${id}&tipo=${tipo}`,
       );
 
       const result = await response.json();
@@ -153,11 +153,11 @@ const OrdenesCompraScreen = () => {
       if (result.estado == "1") {
         Alert.alert("Éxito", result.mensaje);
         // Recargar los datos para ver el cambio de estado y color
-        router.push("/orden-de-compra/aprobada");
+        router.push("/oferta/venta-pendiente");
       } else {
         Alert.alert(
           "Error",
-          result.message || "No se pudo actualizar la orden.",
+          result.message || "No se pudo actualizar la orden2.",
         );
       }
     } catch (error) {
@@ -189,7 +189,7 @@ const OrdenesCompraScreen = () => {
       <CustomHeader />
       <View style={styles.headerContainer}>
         <View style={styles.topRow}>
-          <Link style={styles.backButton} href={"/oferta/venta/"}>
+          <Link style={styles.backButton} href={"/oferta/venta-pendiente"}>
             <Ionicons name="arrow-back" size={24} color="white" />
           </Link>
           <Text style={styles.headerTitle}>{orden.codigo}</Text>
@@ -325,17 +325,17 @@ const OrdenesCompraScreen = () => {
           <View style={styles2.buttonsRow}>
             <TouchableOpacity
               style={[styles2.button, styles2.reject]}
-              onPress={() => router.push("/(tabs)/oferta/venta")}
+              onPress={() => handleUpdateStatus("2")}
             >
-              <Text style={styles2.buttonText}>CERRAR</Text>
+              <Text style={styles2.buttonText}>RECHAZAR</Text>
               <Ionicons name="close" size={18} color="#fff" />
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles2.button, styles2.approve]}
-              onPress={() => router.push("/(tabs)/oferta/venta")}
+              onPress={() => handleUpdateStatus("1")}
             >
-              <Text style={styles2.buttonText}>PDF</Text>
+              <Text style={styles2.buttonText}>APROBAR</Text>
               <Ionicons name="checkmark" size={18} color="#fff" />
             </TouchableOpacity>
           </View>

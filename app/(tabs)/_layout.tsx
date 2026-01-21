@@ -256,6 +256,18 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="oferta/venta-pendiente/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="oferta/venta-pendiente/[id]"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

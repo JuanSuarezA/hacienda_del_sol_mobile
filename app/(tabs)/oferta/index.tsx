@@ -105,7 +105,7 @@ const ComprasScreen = () => {
             <Link href={"/oferta/compra-pendiente"} asChild>
               <Item label="Compra" value={resumen.PENDIENTE_C} />
             </Link>
-            <Link href={"/orden-de-compra/aprobada"} asChild>
+            <Link href={"/oferta/venta-pendiente"} asChild>
               <Item label="Venta" value={resumen.PENDIENTE_V} />
             </Link>
           </View>

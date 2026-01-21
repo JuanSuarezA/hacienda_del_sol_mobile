@@ -38,7 +38,7 @@ const OrdenesCompraScreen = () => {
       setLoading(true);
       // Reemplaza esta URL por la de tu API real
       const response = await fetch(
-        "https://kleurdigital.xyz/util/solicitud-oferta-venta/query_mobile.php",
+        "https://kleurdigital.xyz/util/aprobaciones-oferta-venta/query_mobile.php",
       );
       const json = await response.json();
 
@@ -90,7 +90,9 @@ const OrdenesCompraScreen = () => {
           </Link>
           <View style={styles3.titleWrapper}>
             <Text style={styles3.headerTitle}>Ofertas de Venta</Text>
-            <Text style={styles3.headerSubtitle}>Listado de Ofertas</Text>
+            <Text style={styles3.headerSubtitle}>
+              Listado de Ofertas Pendientes
+            </Text>
           </View>
         </View>
         {/* Buscador */}
@@ -131,7 +133,7 @@ const OrdenesCompraScreen = () => {
 
                 <Link
                   href={{
-                    pathname: "/oferta/venta/[id]",
+                    pathname: "/oferta/venta-pendiente/[id]",
                     params: { id: item.id },
                   }}
                 >
