@@ -1,13 +1,14 @@
 import CustomHeader from "@/components/CustomHeader";
+import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import {
   Link,
   Redirect,
   router,
+  useFocusEffect,
   useLocalSearchParams,
-  useNavigation,
 } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -90,14 +91,16 @@ interface RowThreeColsProps {
 }
 
 const OrdenesCompraScreen = () => {
+  const { user, loadingUser } = useAuth();
+
+  if (loadingUser) return <Text>Cargando usuario...</Text>;
+
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const navigation = useNavigation();
-
-  const [openSolicitud, setOpenSolicitud] = useState(false);
-  const [openSolicitante, setOpenSolicitante] = useState(false);
-  const [openProveedor, setOpenProveedor] = useState(false);
-  const [openObservaciones, setOpenObservaciones] = useState(false);
+  const [openSolicitud, setOpenSolicitud] = useState(true);
+  const [openSolicitante, setOpenSolicitante] = useState(true);
+  const [openProveedor, setOpenProveedor] = useState(true);
+  const [openObservaciones, setOpenObservaciones] = useState(true);
   const [openProducto, setOpenProducto] = useState(true);
 
   // 2. Definir estados para los datos, la carga y el error
@@ -108,7 +111,7 @@ const OrdenesCompraScreen = () => {
   const resumen = React.useMemo(() => {
     const totalGeneral = detalle.reduce(
       (acc, item) => acc + Number(item.total),
-      0
+      0,
     );
 
     return {
@@ -122,10 +125,10 @@ const OrdenesCompraScreen = () => {
       // Reemplaza esta URL por la de tu API real
       const [ordenRes, detalleRes] = await Promise.all([
         fetch(
-          `https://kleurdigital.xyz/util/orden-de-compra/queryOrdenId_mobile.php?id=${id}`
+          `https://kleurdigital.xyz/util/orden-de-compra/queryOrdenId_mobile.php?id=${id}`,
         ),
         fetch(
-          `https://kleurdigital.xyz/util/orden-de-compra/queryOrdenDetalleId_mobile.php?id=${id}`
+          `https://kleurdigital.xyz/util/orden-de-compra/queryOrdenDetalleId_mobile.php?id=${id}`,
         ),
       ]);
       const ordenJson = await ordenRes.json();
@@ -145,7 +148,7 @@ const OrdenesCompraScreen = () => {
       setLoading(true); // Opcional: mostrar loading mientras la API responde
 
       const response = await fetch(
-        `https://kleurdigital.xyz/util/aprobaciones-oc/editarOrden_mobile.php?id=${id}&tipo=${tipo}`
+        `https://kleurdigital.xyz/util/aprobaciones-oc/editarOrden_mobile.php?id=${id}&tipo=${tipo}&u=${user?.id}`,
       );
 
       const result = await response.json();
@@ -157,7 +160,7 @@ const OrdenesCompraScreen = () => {
       } else {
         Alert.alert(
           "Error",
-          result.message || "No se pudo actualizar la orden."
+          result.message || "No se pudo actualizar la orden.",
         );
       }
     } catch (error) {
@@ -168,9 +171,11 @@ const OrdenesCompraScreen = () => {
     }
   };
 
-  useEffect(() => {
-    if (id) fetchOrdenes();
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      if (id) fetchOrdenes();
+    }, [id]),
+  );
 
   if (loading) {
     return (
@@ -189,13 +194,6 @@ const OrdenesCompraScreen = () => {
       <CustomHeader />
       <View style={styles.headerContainer}>
         <View style={styles.topRow}>
-          {/* <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="arrow-back" size={24} color="white" />
-          </TouchableOpacity> */}
-
           <Link style={styles.backButton} href={"/orden-de-compra/pendiente"}>
             <Ionicons name="arrow-back" size={24} color="white" />
           </Link>
@@ -322,11 +320,6 @@ const OrdenesCompraScreen = () => {
             <View style={styles2.card}>
               <Text style={styles2.label}>ELABORADA:</Text>
               <Text style={styles2.value}>{orden.solicitante}</Text>
-            </View>
-
-            <View style={styles2.card}>
-              <Text style={styles2.label}>AUTORIZADA POR:</Text>
-              <Text style={styles2.value}>{orden.aprobador || "-"}</Text>
             </View>
           </View>
 

@@ -1,7 +1,14 @@
 import CustomHeader from "@/components/CustomHeader";
+import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
-import { Link, Redirect, router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import {
+  Link,
+  Redirect,
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
+} from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -89,6 +96,9 @@ interface RowThreeColsProps {
 }
 
 const PagosScreen = () => {
+  const { user, loadingUser } = useAuth();
+
+  if (loadingUser) return <Text>Cargando usuario...</Text>;
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const [openSolicitud, setOpenSolicitud] = useState(false);
@@ -105,7 +115,7 @@ const PagosScreen = () => {
   const resumen = React.useMemo(() => {
     const totalGeneral = detalle.reduce(
       (acc, item) => acc + Number(item.total),
-      0
+      0,
     );
 
     return {
@@ -119,10 +129,10 @@ const PagosScreen = () => {
       // Reemplaza esta URL por la de tu API real
       const [pagoRes, detalleRes] = await Promise.all([
         fetch(
-          `https://kleurdigital.xyz/util/solicitud-pagos/querySolicitudPagoId_mobile.php?id=${id}`
+          `https://kleurdigital.xyz/util/solicitud-pagos/querySolicitudPagoId_mobile.php?id=${id}`,
         ),
         fetch(
-          `https://kleurdigital.xyz/util/solicitud-pagos/queryOrdenDetalleId_mobile.php?id=${id}`
+          `https://kleurdigital.xyz/util/solicitud-pagos/queryOrdenDetalleId_mobile.php?id=${id}`,
         ),
       ]);
       const pagoJson = await pagoRes.json();
@@ -142,7 +152,7 @@ const PagosScreen = () => {
       setLoading(true); // Opcional: mostrar loading mientras la API responde
 
       const response = await fetch(
-        `https://kleurdigital.xyz/util/aprobaciones-sp/editarSolicitud_mobile.php?id=${id}&tipo=${tipo}`
+        `https://kleurdigital.xyz/util/aprobaciones-sp/editarSolicitud_mobile.php?id=${id}&tipo=${tipo}&u=${user?.id}`,
       );
 
       const result = await response.json();
@@ -154,7 +164,7 @@ const PagosScreen = () => {
       } else {
         Alert.alert(
           "Error",
-          result.message || "No se pudo actualizar la orden."
+          result.message || "No se pudo actualizar la orden.",
         );
       }
     } catch (error) {
@@ -165,9 +175,11 @@ const PagosScreen = () => {
     }
   };
 
-  useEffect(() => {
-    if (id) fetchPagos();
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      if (id) fetchPagos();
+    }, [id]),
+  );
 
   if (loading) {
     return (

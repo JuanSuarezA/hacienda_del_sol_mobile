@@ -1,10 +1,34 @@
 import LogoHorizontal from "@/assets/images/logo/Logo-Horizontal.svg";
 import Notificaciones from "@/assets/images/logo/Notificaciones-Inactivo.svg";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import React from "react";
-import { Image, StyleSheet, View } from "react-native";
+import { Alert, Image, StyleSheet, TouchableOpacity, View } from "react-native";
 
 export default function CustomHeader() {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    Alert.alert("Cerrar sesión", "¿Estás seguro de que quieres salir?", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Sí, salir",
+        onPress: async () => {
+          try {
+            // Eliminamos el token y los datos del usuario
+            await SecureStore.deleteItemAsync("token");
+            await SecureStore.deleteItemAsync("user");
+
+            // Redirigimos al login (asegúrate de que la ruta coincida con tu estructura)
+            router.replace("/(auth)/login");
+          } catch (error) {
+            Alert.alert("Error", "No se pudo cerrar la sesión");
+          }
+        },
+      },
+    ]);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -17,10 +41,12 @@ export default function CustomHeader() {
           <Link href="/notificaciones">
             <Notificaciones />
           </Link>
-          <Image
-            source={require("@/assets/images/varios/user.png")}
-            style={styles.avatar}
-          />
+          <TouchableOpacity onPress={handleLogout} activeOpacity={0.7}>
+            <Image
+              source={require("@/assets/images/varios/user.png")}
+              style={styles.avatar}
+            />
+          </TouchableOpacity>
         </View>
       </View>
     </View>

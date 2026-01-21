@@ -1,7 +1,13 @@
 import CustomHeader from "@/components/CustomHeader";
 import { Ionicons } from "@expo/vector-icons";
-import { Link, Redirect, router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import {
+  Link,
+  Redirect,
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
+} from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -99,7 +105,7 @@ const OrdenesCompraScreen = () => {
   const resumen = React.useMemo(() => {
     const totalGeneral = detalle.reduce(
       (acc, item) => acc + Number(item.total),
-      0
+      0,
     );
 
     return {
@@ -113,10 +119,10 @@ const OrdenesCompraScreen = () => {
       // Reemplaza esta URL por la de tu API real
       const [ordenRes, detalleRes] = await Promise.all([
         fetch(
-          `https://kleurdigital.xyz/util/orden-de-compra/queryOrdenId_mobile.php?id=${id}`
+          `https://kleurdigital.xyz/util/orden-de-compra/queryOrdenId_mobile.php?id=${id}`,
         ),
         fetch(
-          `https://kleurdigital.xyz/util/orden-de-compra/queryOrdenDetalleId_mobile.php?id=${id}`
+          `https://kleurdigital.xyz/util/orden-de-compra/queryOrdenDetalleId_mobile.php?id=${id}`,
         ),
       ]);
       const ordenJson = await ordenRes.json();
@@ -131,9 +137,11 @@ const OrdenesCompraScreen = () => {
     }
   };
 
-  useEffect(() => {
-    if (id) fetchOrdenes();
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      if (id) fetchOrdenes();
+    }, [id]),
+  );
 
   if (loading) {
     return (

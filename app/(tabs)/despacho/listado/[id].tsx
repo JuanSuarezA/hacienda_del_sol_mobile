@@ -1,7 +1,13 @@
 import CustomHeader from "@/components/CustomHeader";
 import { Ionicons } from "@expo/vector-icons";
-import { Link, Redirect, router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import {
+  Link,
+  Redirect,
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
+} from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -143,9 +149,11 @@ const OrdenesCompraScreen = () => {
     }
   };
 
-  useEffect(() => {
-    if (id) fetchOrdenes();
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      if (id) fetchOrdenes();
+    }, [id]),
+  );
 
   if (loading) {
     return (
@@ -334,6 +342,18 @@ const OrdenesCompraScreen = () => {
             <View style={styles2.card}>
               <Text style={styles2.label}>AUTORIZADA POR:</Text>
               <Text style={styles2.value}>{orden.aprobador || "-"}</Text>
+            </View>
+          </View>
+
+          <View style={styles2.row}>
+            <View style={styles2.card}>
+              <Text style={styles2.label}>CARGADA POR:</Text>
+              <Text style={styles2.value}>{orden.cargador || "-"}</Text>
+            </View>
+
+            <View style={styles2.card}>
+              <Text style={styles2.label}>DESPACHADA POR:</Text>
+              <Text style={styles2.value}>{orden.despachador || "-"}</Text>
             </View>
           </View>
 

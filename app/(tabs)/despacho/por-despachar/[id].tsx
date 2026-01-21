@@ -1,5 +1,6 @@
 import CustomCheckbox from "@/components/CustomCheckBox";
 import CustomHeader from "@/components/CustomHeader";
+import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import {
   Link,
@@ -70,6 +71,9 @@ interface Transporte {
 }
 
 const OrdenesCompraScreen = () => {
+  const { user, loadingUser } = useAuth();
+
+  if (loadingUser) return <Text>Cargando usuario...</Text>;
   const { id } = useLocalSearchParams<{ id: string }>();
 
   // --- ESTADOS DE DATOS ---
@@ -152,6 +156,7 @@ const OrdenesCompraScreen = () => {
           },
           body: JSON.stringify({
             id_pedido: id,
+            u: user?.id,
             tipo_accion: tipo, // "1" aprobar, "2" rechazar
             transportes_seleccionados: selectedIds, // Enviamos el array de IDs
           }),
@@ -356,9 +361,22 @@ const OrdenesCompraScreen = () => {
               <Text style={styles2.label}>ELABORADA:</Text>
               <Text style={styles2.value}>{orden.solicitante}</Text>
             </View>
+
             <View style={styles2.card}>
               <Text style={styles2.label}>AUTORIZADA POR:</Text>
               <Text style={styles2.value}>{orden.aprobador || "-"}</Text>
+            </View>
+          </View>
+
+          <View style={styles2.row}>
+            <View style={styles2.card}>
+              <Text style={styles2.label}>CARGADA POR:</Text>
+              <Text style={styles2.value}>{orden.cargador || "-"}</Text>
+            </View>
+
+            <View style={styles2.card}>
+              <Text style={styles2.label}>DESPACHADA POR:</Text>
+              <Text style={styles2.value}>{orden.despachador || "-"}</Text>
             </View>
           </View>
 

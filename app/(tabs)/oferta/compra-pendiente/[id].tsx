@@ -1,14 +1,15 @@
 import CustomHeader from "@/components/CustomHeader";
+import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import {
   Link,
   Redirect,
   router,
+  useFocusEffect,
   useLocalSearchParams,
-  useNavigation,
 } from "expo-router";
 import { VideoView, useVideoPlayer } from "expo-video";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -68,6 +69,13 @@ interface Detalle {
   n: string;
 }
 
+interface Aprobacion {
+  id: number;
+  aprobador: string;
+  texto: string;
+  aprobador_id: number;
+}
+
 interface Archivo {
   id: number;
   solicitud_oferta_id: number;
@@ -117,20 +125,28 @@ interface RowThreeColsProps {
 const OrdenesCompraScreen = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const navigation = useNavigation();
-
-  const [openSolicitud, setOpenSolicitud] = useState(false);
-  const [openSolicitante, setOpenSolicitante] = useState(false);
-  const [openProveedor, setOpenProveedor] = useState(false);
-  const [openObservaciones, setOpenObservaciones] = useState(false);
-  const [openProducto, setOpenProducto] = useState(false);
+  const [openSolicitud, setOpenSolicitud] = useState(true);
+  const [openSolicitante, setOpenSolicitante] = useState(true);
+  const [openProveedor, setOpenProveedor] = useState(true);
+  const [openObservaciones, setOpenObservaciones] = useState(true);
+  const [openProducto, setOpenProducto] = useState(true);
   const [openArchivo, setOpenArchivo] = useState(true);
 
   // 2. Definir estados para los datos, la carga y el error
   const [orden, setOrden] = useState<Orden | null>(null);
   const [detalle, setDetalle] = useState<Detalle[]>([]);
   const [archivo, setArchivo] = useState<Archivo[]>([]);
+  const [aprobacion, setAprobacion] = useState<Aprobacion[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const { user, loadingUser } = useAuth();
+
+  if (loadingUser) return <Text>Cargando usuario...</Text>;
+
+  const yaAprobo = React.useMemo(() => {
+    if (!user) return false;
+    return aprobacion.some((item) => item.aprobador_id === Number(user.id));
+  }, [aprobacion, user]);
 
   const resumen = React.useMemo(() => {
     const totalGeneral = detalle.reduce(
@@ -147,24 +163,30 @@ const OrdenesCompraScreen = () => {
     try {
       setLoading(true);
       // Reemplaza esta URL por la de tu API real
-      const [ordenRes, detalleRes, archivoRes] = await Promise.all([
-        fetch(
-          `https://kleurdigital.xyz/util/solicitud-oferta/queryPedidoId_mobile.php?id=${id}`,
-        ),
-        fetch(
-          `https://kleurdigital.xyz/util/solicitud-oferta/queryPedidoDetalleId_mobile.php?id=${id}`,
-        ),
-        fetch(
-          `https://kleurdigital.xyz/util/solicitud-oferta/queryPedidoArchivosId_mobile.php?id=${id}`,
-        ),
-      ]);
+      const [ordenRes, detalleRes, archivoRes, aprobacionRes] =
+        await Promise.all([
+          fetch(
+            `https://kleurdigital.xyz/util/solicitud-oferta/queryPedidoId_mobile.php?id=${id}`,
+          ),
+          fetch(
+            `https://kleurdigital.xyz/util/solicitud-oferta/queryPedidoDetalleId_mobile.php?id=${id}`,
+          ),
+          fetch(
+            `https://kleurdigital.xyz/util/solicitud-oferta/queryPedidoArchivosId_mobile.php?id=${id}`,
+          ),
+          fetch(
+            `https://kleurdigital.xyz/util/aprobaciones-oferta/queryAprobador_mobile.php?id=${id}`,
+          ),
+        ]);
       const ordenJson = await ordenRes.json();
       const detalleJson = await detalleRes.json();
       const archivoJson = await archivoRes.json();
+      const aprobacionJson = await aprobacionRes.json();
 
       setOrden(ordenJson.data?.[0] || null);
       setDetalle(detalleJson.data || []);
       setArchivo(archivoJson.data || []);
+      setAprobacion(aprobacionJson.data || []);
     } catch (error) {
       console.error("Error obteniendo ordenes:", error);
     } finally {
@@ -227,7 +249,7 @@ const OrdenesCompraScreen = () => {
       setLoading(true); // Opcional: mostrar loading mientras la API responde
 
       const response = await fetch(
-        `https://kleurdigital.xyz/util/aprobaciones-oferta/editarOrden_mobile.php?id=${id}&tipo=${tipo}`,
+        `https://kleurdigital.xyz/util/aprobaciones-oferta/editarOrden_mobile.php?id=${id}&tipo=${tipo}&u=${user?.id}`,
       );
 
       const result = await response.json();
@@ -250,9 +272,11 @@ const OrdenesCompraScreen = () => {
     }
   };
 
-  useEffect(() => {
-    if (id) fetchOrdenes();
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      if (id) fetchOrdenes();
+    }, [id]),
+  );
 
   if (loading) {
     return (
@@ -422,31 +446,38 @@ const OrdenesCompraScreen = () => {
               <Text style={styles2.label}>ELABORADA:</Text>
               <Text style={styles2.value}>{orden.solicitante}</Text>
             </View>
-
-            {/* <View style={styles2.card}>
-              <Text style={styles2.label}>AUTORIZADA POR:</Text>
-              <Text style={styles2.value}>{orden.aprobador || "-"}</Text>
-            </View> */}
           </View>
+
+          {aprobacion.map((item) => (
+            <View style={styles2.row} key={item.id}>
+              <View style={styles2.card}>
+                <Text style={styles2.label}>{item.texto}:</Text>
+                <Text style={styles2.value}>{item.aprobador}</Text>
+              </View>
+            </View>
+          ))}
 
           {/* Botones */}
-          <View style={styles2.buttonsRow}>
-            <TouchableOpacity
-              style={[styles2.button, styles2.reject]}
-              onPress={() => handleUpdateStatus("2")}
-            >
-              <Text style={styles2.buttonText}>RECHAZAR</Text>
-              <Ionicons name="close" size={18} color="#fff" />
-            </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles2.button, styles2.approve]}
-              onPress={() => handleUpdateStatus("1")}
-            >
-              <Text style={styles2.buttonText}>APROBAR</Text>
-              <Ionicons name="checkmark" size={18} color="#fff" />
-            </TouchableOpacity>
-          </View>
+          {!yaAprobo && (
+            <View style={styles2.buttonsRow}>
+              <TouchableOpacity
+                style={[styles2.button, styles2.reject]}
+                onPress={() => handleUpdateStatus("2")}
+              >
+                <Text style={styles2.buttonText}>RECHAZAR</Text>
+                <Ionicons name="close" size={18} color="#fff" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles2.button, styles2.approve]}
+                onPress={() => handleUpdateStatus("1")}
+              >
+                <Text style={styles2.buttonText}>APROBAR</Text>
+                <Ionicons name="checkmark" size={18} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>

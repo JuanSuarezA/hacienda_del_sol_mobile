@@ -1,8 +1,9 @@
 import CamionIngresar from "@/assets/images/varios/ingresar.svg";
 import CamionSalir from "@/assets/images/varios/salir.svg";
 import CustomHeader from "@/components/CustomHeader";
+import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
-import { Link, useFocusEffect, useRouter } from "expo-router";
+import { Link, useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -30,7 +31,9 @@ interface IngresoSalida {
 }
 
 const IngresosScreen = () => {
-  const router = useRouter();
+  const { user, loadingUser } = useAuth();
+
+  if (loadingUser) return <Text>Cargando usuario...</Text>;
 
   // 2. Definir estados para los datos, la carga y el error
   const [ingresos, setOrdenes] = useState<IngresoSalida[]>([]);
@@ -70,7 +73,7 @@ const IngresosScreen = () => {
       setLoading(true); // Opcional: mostrar loading mientras la API responde
 
       const response = await fetch(
-        `https://kleurdigital.xyz/util/ingresos-salidas-contratos/ingresoContrato_mobile.php?id=${id}&tipo=${tipo}`,
+        `https://kleurdigital.xyz/util/ingresos-salidas-contratos/ingresoContrato_mobile.php?id=${id}&tipo=${tipo}&u=${user?.id}`,
       );
 
       const result = await response.json();

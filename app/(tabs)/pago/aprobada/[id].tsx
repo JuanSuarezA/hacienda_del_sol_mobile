@@ -1,7 +1,13 @@
 import CustomHeader from "@/components/CustomHeader";
 import { Ionicons } from "@expo/vector-icons";
-import { Link, Redirect, router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import {
+  Link,
+  Redirect,
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
+} from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -104,7 +110,7 @@ const PagosScreen = () => {
   const resumen = React.useMemo(() => {
     const totalGeneral = detalle.reduce(
       (acc, item) => acc + Number(item.total),
-      0
+      0,
     );
 
     return {
@@ -118,10 +124,10 @@ const PagosScreen = () => {
       // Reemplaza esta URL por la de tu API real
       const [pagoRes, detalleRes] = await Promise.all([
         fetch(
-          `https://kleurdigital.xyz/util/solicitud-pagos/querySolicitudPagoId_mobile.php?id=${id}`
+          `https://kleurdigital.xyz/util/solicitud-pagos/querySolicitudPagoId_mobile.php?id=${id}`,
         ),
         fetch(
-          `https://kleurdigital.xyz/util/solicitud-pagos/queryOrdenDetalleId_mobile.php?id=${id}`
+          `https://kleurdigital.xyz/util/solicitud-pagos/queryOrdenDetalleId_mobile.php?id=${id}`,
         ),
       ]);
       const pagoJson = await pagoRes.json();
@@ -136,9 +142,11 @@ const PagosScreen = () => {
     }
   };
 
-  useEffect(() => {
-    if (id) fetchPagos();
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      if (id) fetchPagos();
+    }, [id]),
+  );
 
   if (loading) {
     return (

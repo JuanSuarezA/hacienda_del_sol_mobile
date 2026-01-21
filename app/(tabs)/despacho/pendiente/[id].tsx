@@ -1,7 +1,14 @@
 import CustomHeader from "@/components/CustomHeader";
+import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
-import { Link, Redirect, router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import {
+  Link,
+  Redirect,
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
+} from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -100,6 +107,9 @@ interface RowThreeColsProps {
 }
 
 const OrdenesCompraScreen = () => {
+  const { user, loadingUser } = useAuth();
+
+  if (loadingUser) return <Text>Cargando usuario...</Text>;
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const [openSolicitud, setOpenSolicitud] = useState(false);
@@ -149,7 +159,7 @@ const OrdenesCompraScreen = () => {
       setLoading(true); // Opcional: mostrar loading mientras la API responde
 
       const response = await fetch(
-        `https://kleurdigital.xyz/util/aprobaciones-od/editarPedido_mobile.php?id=${id}&tipo=${tipo}`,
+        `https://kleurdigital.xyz/util/aprobaciones-od/editarPedido_mobile.php?id=${id}&tipo=${tipo}&u=${user?.id}`,
       );
 
       const result = await response.json();
@@ -172,9 +182,11 @@ const OrdenesCompraScreen = () => {
     }
   };
 
-  useEffect(() => {
-    if (id) fetchOrdenes();
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      if (id) fetchOrdenes();
+    }, [id]),
+  );
 
   if (loading) {
     return (
@@ -363,6 +375,18 @@ const OrdenesCompraScreen = () => {
             <View style={styles2.card}>
               <Text style={styles2.label}>AUTORIZADA POR:</Text>
               <Text style={styles2.value}>{orden.aprobador || "-"}</Text>
+            </View>
+          </View>
+
+          <View style={styles2.row}>
+            <View style={styles2.card}>
+              <Text style={styles2.label}>CARGADA POR:</Text>
+              <Text style={styles2.value}>{orden.cargador || "-"}</Text>
+            </View>
+
+            <View style={styles2.card}>
+              <Text style={styles2.label}>DESPACHADA POR:</Text>
+              <Text style={styles2.value}>{orden.despachador || "-"}</Text>
             </View>
           </View>
 
