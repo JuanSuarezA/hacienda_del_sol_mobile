@@ -400,32 +400,32 @@ const OrdenesCompraScreen = () => {
           {detalle.map((item) => (
             <View key={item.id} style={{ gap: 8 }}>
               <RowThreeCols
-                leftLabel="Genero"
-                leftValue={item.nombre_producto}
-                centerLabel="Codigo"
-                centerValue={item.codigo_categoria}
-                rightLabel="Descripcion"
-                rightValue={item.descripcion}
+                leftLabel="Codigo"
+                leftValue={item.codigo_categoria}
+                centerLabel="Raza"
+                centerValue={item.nombre_subcategoria}
+                rightLabel="Genero"
+                rightValue={item.nombre_producto}
               />
               <RowThreeCols
                 leftLabel="Cantidad"
                 leftValue={item.cantidad}
                 centerLabel="Precio"
                 centerValue={item.costo}
-                rightLabel="Total"
-                rightValue={item.total}
+                rightLabel=""
+                rightValue=""
               />
               <View style={styles.separator} />
             </View>
           ))}
-          <RowThreeCols
+          {/* <RowThreeCols
             leftLabel=""
             leftValue=""
             centerLabel=""
             centerValue="Total"
             rightLabel=""
             rightValue={resumen.totalGeneral.toFixed(2)}
-          />
+          /> */}
         </Section>
 
         {/* ARCHIVOS */}

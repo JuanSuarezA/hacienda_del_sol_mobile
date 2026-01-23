@@ -94,10 +94,10 @@ const OrdenesCompraScreen = () => {
 
   const navigation = useNavigation();
 
-  const [openSolicitud, setOpenSolicitud] = useState(false);
-  const [openSolicitante, setOpenSolicitante] = useState(false);
-  const [openProveedor, setOpenProveedor] = useState(false);
-  const [openObservaciones, setOpenObservaciones] = useState(false);
+  const [openSolicitud, setOpenSolicitud] = useState(true);
+  const [openSolicitante, setOpenSolicitante] = useState(true);
+  const [openProveedor, setOpenProveedor] = useState(true);
+  const [openObservaciones, setOpenObservaciones] = useState(true);
   const [openProducto, setOpenProducto] = useState(true);
 
   // 2. Definir estados para los datos, la carga y el error

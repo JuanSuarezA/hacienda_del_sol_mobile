@@ -2,7 +2,7 @@
   "expo": {
     "name": "Hacienda del Sol",
     "slug": "hs_app_react_2",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "hsappreact2",

@@ -52,11 +52,12 @@ interface Detalle {
   nombre_categoria: string;
   nombre_subcategoria: string;
   nombre_producto: string;
-  ubicacion: string;
+  potrero: string;
   costo: string;
   cantidad: string;
   total: string;
   n: string;
+  codigo_categoria: string;
 }
 
 interface Transporte {
@@ -86,11 +87,11 @@ const OrdenesCompraScreen = () => {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   // --- ESTADOS DE ACORDEÓN ---
-  const [openSolicitud, setOpenSolicitud] = useState(false);
-  const [openSolicitante, setOpenSolicitante] = useState(false);
-  const [openProveedor, setOpenProveedor] = useState(false);
-  const [openObservaciones, setOpenObservaciones] = useState(false);
-  const [openProducto, setOpenProducto] = useState(false);
+  const [openSolicitud, setOpenSolicitud] = useState(true);
+  const [openSolicitante, setOpenSolicitante] = useState(true);
+  const [openProveedor, setOpenProveedor] = useState(true);
+  const [openObservaciones, setOpenObservaciones] = useState(true);
+  const [openProducto, setOpenProducto] = useState(true);
   const [openTransporte, setOpenTransporte] = useState(true); // Abierto por defecto para ver los checkboxes
 
   const fetchOrdenes = async () => {
@@ -292,9 +293,10 @@ const OrdenesCompraScreen = () => {
                   leftValue={`Camion ${item.n}`}
                   centerLabel="Cantidad"
                   centerValue={`${item.cantidad} CBZ`}
-                  rightLabel="Estado"
-                  rightValue={item.estado}
+                  rightLabel=""
+                  rightValue=""
                 />
+                <RowFull label="Estado" value={orden.estado} />
 
                 {/* EQUIVALENTE AL IF DE PHP PARA MOSTRAR EL CHECKBOX */}
                 {mostrarCheckbox && (
@@ -303,7 +305,7 @@ const OrdenesCompraScreen = () => {
                       label={
                         estaDeshabilitado
                           ? "Entrada pendiente"
-                          : "Seleccionar para cargado"
+                          : "Seleccionar para despacho"
                       }
                       value={selectedIds.includes(item.id)}
                       onChange={() => toggleTransporte(item.id)}
@@ -327,18 +329,23 @@ const OrdenesCompraScreen = () => {
         >
           {detalle.map((item) => (
             <View key={item.id} style={{ gap: 8 }}>
-              <RowFull
-                label={`Producto ${item.n}`}
-                value={item.nombre_producto}
+              <RowFull label="Nro." value={item.n} />
+              <RowThreeCols
+                leftLabel="Codigo"
+                leftValue={item.codigo_categoria}
+                centerLabel="Raza"
+                centerValue={item.nombre_subcategoria}
+                rightLabel="Genero"
+                rightValue={item.nombre_producto}
               />
-              <RowFull label="Ubicacion" value={item.ubicacion} />
+
               <RowThreeCols
                 leftLabel="Cantidad"
                 leftValue={item.cantidad}
                 centerLabel="Precio"
                 centerValue={item.costo}
-                rightLabel="Total"
-                rightValue={item.total}
+                rightLabel="Potrero"
+                rightValue={item.potrero}
               />
               <View style={styles.separator} />
             </View>

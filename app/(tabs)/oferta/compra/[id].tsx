@@ -122,11 +122,11 @@ interface RowThreeColsProps {
 const OrdenesCompraScreen = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const [openSolicitud, setOpenSolicitud] = useState(false);
-  const [openSolicitante, setOpenSolicitante] = useState(false);
-  const [openProveedor, setOpenProveedor] = useState(false);
-  const [openObservaciones, setOpenObservaciones] = useState(false);
-  const [openProducto, setOpenProducto] = useState(false);
+  const [openSolicitud, setOpenSolicitud] = useState(true);
+  const [openSolicitante, setOpenSolicitante] = useState(true);
+  const [openProveedor, setOpenProveedor] = useState(true);
+  const [openObservaciones, setOpenObservaciones] = useState(true);
+  const [openProducto, setOpenProducto] = useState(true);
   const [openArchivo, setOpenArchivo] = useState(true);
 
   // 2. Definir estados para los datos, la carga y el error
@@ -360,32 +360,32 @@ const OrdenesCompraScreen = () => {
           {detalle.map((item) => (
             <View key={item.id} style={{ gap: 8 }}>
               <RowThreeCols
-                leftLabel="Genero"
-                leftValue={item.nombre_producto}
-                centerLabel="Codigo"
-                centerValue={item.codigo_categoria}
-                rightLabel="Descripcion"
-                rightValue={item.descripcion}
+                leftLabel="Codigo"
+                leftValue={item.codigo_categoria}
+                centerLabel="Raza"
+                centerValue={item.nombre_subcategoria}
+                rightLabel="Genero"
+                rightValue={item.nombre_producto}
               />
               <RowThreeCols
                 leftLabel="Cantidad"
                 leftValue={item.cantidad}
                 centerLabel="Precio"
                 centerValue={item.costo}
-                rightLabel="Total"
-                rightValue={item.total}
+                rightLabel=""
+                rightValue=""
               />
               <View style={styles.separator} />
             </View>
           ))}
-          <RowThreeCols
+          {/* <RowThreeCols
             leftLabel=""
             leftValue=""
             centerLabel=""
             centerValue="Total"
             rightLabel=""
             rightValue={resumen.totalGeneral.toFixed(2)}
-          />
+          /> */}
         </Section>
 
         {/* ARCHIVOS */}
