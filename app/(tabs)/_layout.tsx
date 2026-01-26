@@ -2,11 +2,17 @@ import { Tabs } from "expo-router";
 import React from "react";
 
 import ComprasIcon from "@/assets/images/menu_icon/Compras.svg";
+import ComprasActivoIcon from "@/assets/images/menu_icon/Compras_activo.svg";
 import DespachosIcon from "@/assets/images/menu_icon/Despachos.svg";
+import DespachosActivoIcon from "@/assets/images/menu_icon/Despachos_activo.svg";
 import HomeIcon from "@/assets/images/menu_icon/Home.svg";
+import HomeActivoIcon from "@/assets/images/menu_icon/Home_activo.svg";
 import OfertasIcon from "@/assets/images/menu_icon/Ofertas.svg";
+import OfertasActivoIcon from "@/assets/images/menu_icon/Ofertas_activo.svg";
 import PagosIcon from "@/assets/images/menu_icon/Pagos.svg";
+import PagosActivoIcon from "@/assets/images/menu_icon/Pagos_activo.svg";
 import PorteriaIcon from "@/assets/images/menu_icon/Porteria.svg";
+import PorteriaActivoIcon from "@/assets/images/menu_icon/Porteria_activo.svg";
 import { HapticTab } from "@/components/haptic-tab";
 import { AuthProvider } from "@/context/AuthContext";
 
@@ -20,48 +26,58 @@ export default function TabLayout() {
           tabBarActiveTintColor: colorScheme,
           headerShown: false,
           tabBarButton: HapticTab,
+          tabBarLabelStyle: {
+            fontSize: 9,
+            paddingTop: 5, // Ajusta el número a tu gusto
+          },
         }}
       >
         <Tabs.Screen
           name="index"
           options={{
             title: "Home",
-            tabBarIcon: ({ color }) => <HomeIcon fill={color} />,
+            tabBarIcon: ({ focused }) =>
+              focused ? <HomeActivoIcon /> : <HomeIcon />,
           }}
         />
         <Tabs.Screen
           name="orden-de-compra/index"
           options={{
             title: "COMPRAS",
-            tabBarIcon: ({ color }) => <ComprasIcon fill={color} />,
+            tabBarIcon: ({ focused }) =>
+              focused ? <ComprasActivoIcon /> : <ComprasIcon />,
           }}
         />
         <Tabs.Screen
           name="pago/index"
           options={{
             title: "PAGOS",
-            tabBarIcon: ({ color }) => <PagosIcon fill={color} />,
+            tabBarIcon: ({ focused }) =>
+              focused ? <PagosActivoIcon /> : <PagosIcon />,
           }}
         />
         <Tabs.Screen
           name="oferta/index"
           options={{
             title: "OFERTAS",
-            tabBarIcon: ({ color }) => <OfertasIcon fill={color} />,
+            tabBarIcon: ({ focused }) =>
+              focused ? <OfertasActivoIcon /> : <OfertasIcon />,
           }}
         />
         <Tabs.Screen
           name="despacho/index"
           options={{
             title: "DESPACHOS",
-            tabBarIcon: ({ color }) => <DespachosIcon fill={color} />,
+            tabBarIcon: ({ focused }) =>
+              focused ? <DespachosActivoIcon /> : <DespachosIcon />,
           }}
         />
         <Tabs.Screen
           name="porteria/index"
           options={{
             title: "PORTERIA",
-            tabBarIcon: ({ color }) => <PorteriaIcon fill={color} />,
+            tabBarIcon: ({ focused }) =>
+              focused ? <PorteriaActivoIcon /> : <PorteriaIcon />,
           }}
         />
         <Tabs.Screen

@@ -138,51 +138,68 @@ const OrdenesCompraScreen = () => {
 
   // --- ENVÍO DE DATOS POST (ACTUALIZADO) ---
   const handleUpdateStatus = async (tipo: string) => {
-    // Validación: Si es aprobar (tipo 1), debe haber seleccionado al menos un transporte
-    if (tipo === "1" && selectedIds.length === 0) {
-      Alert.alert(
-        "Atención",
-        "Debes seleccionar al menos un transporte para proceder con la aprobación.",
-      );
-      return;
-    }
-
-    try {
-      setLoading(true);
-      // Endpoint para procesar la aprobación/rechazo
-      const response = await fetch(
-        `https://kleurdigital.xyz/util/carga-od/editarPedido_mobile.php`,
+    const accion = tipo === "1" ? "cargar" : "rechazar";
+    Alert.alert(
+      "Confirmación",
+      `¿Estás seguro de que quieres ${accion} esta orden de despacho?`,
+      [
+        { text: "Cancelar", style: "cancel" },
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+          text: `Sí, ${accion}`,
+          onPress: async () => {
+            if (tipo === "1" && selectedIds.length === 0) {
+              Alert.alert(
+                "Atención",
+                "Debes seleccionar al menos un transporte para proceder con la aprobación.",
+              );
+              return;
+            }
+
+            try {
+              setLoading(true);
+              // Endpoint para procesar la aprobación/rechazo
+              const response = await fetch(
+                `https://kleurdigital.xyz/util/carga-od/editarPedido_mobile.php`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    u: user?.id,
+                    id_pedido: id,
+                    tipo_accion: tipo, // "1" aprobar, "2" rechazar
+                    transportes_seleccionados: selectedIds, // Enviamos el array de IDs
+                  }),
+                },
+              );
+
+              const result = await response.json();
+
+              if (result.estado == "1") {
+                Alert.alert("Éxito", result.mensaje);
+                router.push("/despacho/por-cargar");
+              } else {
+                Alert.alert(
+                  "Error",
+                  result.message || "No se pudo actualizar la orden.",
+                );
+              }
+            } catch (error) {
+              console.error("Error al actualizar:", error);
+              Alert.alert(
+                "Error",
+                "Ocurrió un error de conexión con el servidor.",
+              );
+            } finally {
+              setLoading(false);
+            }
           },
-          body: JSON.stringify({
-            u: user?.id,
-            id_pedido: id,
-            tipo_accion: tipo, // "1" aprobar, "2" rechazar
-            transportes_seleccionados: selectedIds, // Enviamos el array de IDs
-          }),
         },
-      );
+      ],
+    );
 
-      const result = await response.json();
-
-      if (result.estado == "1") {
-        Alert.alert("Éxito", result.mensaje);
-        router.push("/despacho/por-cargar");
-      } else {
-        Alert.alert(
-          "Error",
-          result.message || "No se pudo actualizar la orden.",
-        );
-      }
-    } catch (error) {
-      console.error("Error al actualizar:", error);
-      Alert.alert("Error", "Ocurrió un error de conexión con el servidor.");
-    } finally {
-      setLoading(false);
-    }
+    // Validación: Si es aprobar (tipo 1), debe haber seleccionado al menos un transporte
   };
 
   if (loading) {
@@ -307,7 +324,7 @@ const OrdenesCompraScreen = () => {
                       label={
                         estaDeshabilitado
                           ? "Entrada pendiente"
-                          : "Seleccionar para cargado"
+                          : "Camion Cargado"
                       }
                       value={selectedIds.includes(item.id)}
                       onChange={() => toggleTransporte(item.id)}

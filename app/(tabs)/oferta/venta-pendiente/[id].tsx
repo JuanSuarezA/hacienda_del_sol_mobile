@@ -41,10 +41,11 @@ interface Orden {
 
 interface Detalle {
   id: number;
+  codigo_categoria: string;
   nombre_categoria: string;
   nombre_subcategoria: string;
   nombre_producto: string;
-  ubicacion: string;
+  potrero: string;
   costo: string;
   cantidad: string;
   total: string;
@@ -162,31 +163,44 @@ const OrdenesCompraScreen = () => {
   };
 
   const handleUpdateStatus = async (tipo: string) => {
-    try {
-      setLoading(true); // Opcional: mostrar loading mientras la API responde
+    const accion = tipo === "1" ? "aprobar" : "rechazar";
+    Alert.alert(
+      "Confirmación",
+      `¿Estás seguro de que quieres ${accion} esta oferta?`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: `Sí, ${accion}`,
+          onPress: async () => {
+            try {
+              setLoading(true); // Opcional: mostrar loading mientras la API responde
 
-      const response = await fetch(
-        `https://kleurdigital.xyz/util/aprobaciones-oferta-venta/editarOrden_mobile.php?id=${id}&tipo=${tipo}&u=${user?.id}`,
-      );
+              const response = await fetch(
+                `https://kleurdigital.xyz/util/aprobaciones-oferta-venta/editarOrden_mobile.php?id=${id}&tipo=${tipo}&u=${user?.id}`,
+              );
 
-      const result = await response.json();
+              const result = await response.json();
 
-      if (result.estado == "1") {
-        Alert.alert("Éxito", result.mensaje);
-        // Recargar los datos para ver el cambio de estado y color
-        router.push("/oferta/venta-pendiente");
-      } else {
-        Alert.alert(
-          "Error",
-          result.message || "No se pudo actualizar la orden2.",
-        );
-      }
-    } catch (error) {
-      console.error("Error al actualizar:", error);
-      Alert.alert("Error", "Ocurrió un error de conexión.");
-    } finally {
-      setLoading(false);
-    }
+              if (result.estado == "1") {
+                Alert.alert("Éxito", result.mensaje);
+                // Recargar los datos para ver el cambio de estado y color
+                router.push("/oferta/venta-pendiente");
+              } else {
+                Alert.alert(
+                  "Error",
+                  result.message || "No se pudo actualizar la orden2.",
+                );
+              }
+            } catch (error) {
+              console.error("Error al actualizar:", error);
+              Alert.alert("Error", "Ocurrió un error de conexión.");
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ],
+    );
   };
 
   useFocusEffect(
@@ -304,18 +318,22 @@ const OrdenesCompraScreen = () => {
         >
           {detalle.map((item) => (
             <View key={item.id} style={{ gap: 8 }}>
-              <RowFull
-                label={`Producto ${item.n}`}
-                value={item.nombre_producto}
+              <RowFull label="Nro." value={item.n} />
+              <RowThreeCols
+                leftLabel="Codigo"
+                leftValue={item.codigo_categoria}
+                centerLabel="Raza"
+                centerValue={item.nombre_subcategoria}
+                rightLabel="Genero"
+                rightValue={item.nombre_producto}
               />
-              <RowFull label="Ubicacion" value={item.ubicacion} />
               <RowThreeCols
                 leftLabel="Cantidad"
                 leftValue={item.cantidad}
                 centerLabel="Precio"
                 centerValue={item.costo}
-                rightLabel="Total"
-                rightValue={item.total}
+                rightLabel="Potrero"
+                rightValue={item.potrero}
               />
               <View style={styles.separator} />
             </View>
@@ -326,7 +344,7 @@ const OrdenesCompraScreen = () => {
             centerLabel=""
             centerValue="Total"
             rightLabel=""
-            rightValue={resumen.totalGeneral.toFixed(2)}
+            rightValue={`${((resumen?.totalGeneral || 0) * Number(orden?.peso_promedio || 0)).toLocaleString("es-BO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           />
         </Section>
 

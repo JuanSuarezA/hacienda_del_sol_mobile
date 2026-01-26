@@ -156,31 +156,44 @@ const OrdenesCompraScreen = () => {
   };
 
   const handleUpdateStatus = async (tipo: string) => {
-    try {
-      setLoading(true); // Opcional: mostrar loading mientras la API responde
+    const accion = tipo === "1" ? "aprobar" : "rechazar";
+    Alert.alert(
+      "Confirmación",
+      `¿Estás seguro de que quieres ${accion} esta orden de despacho?`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: `Sí, ${accion}`,
+          onPress: async () => {
+            try {
+              setLoading(true); // Opcional: mostrar loading mientras la API responde
 
-      const response = await fetch(
-        `https://kleurdigital.xyz/util/aprobaciones-od/editarPedido_mobile.php?id=${id}&tipo=${tipo}&u=${user?.id}`,
-      );
+              const response = await fetch(
+                `https://kleurdigital.xyz/util/aprobaciones-od/editarPedido_mobile.php?id=${id}&tipo=${tipo}&u=${user?.id}`,
+              );
 
-      const result = await response.json();
+              const result = await response.json();
 
-      if (result.estado == "1") {
-        Alert.alert("Éxito", result.mensaje);
-        // Recargar los datos para ver el cambio de estado y color
-        router.push("/despacho/pendiente");
-      } else {
-        Alert.alert(
-          "Error",
-          result.message || "No se pudo actualizar la orden.",
-        );
-      }
-    } catch (error) {
-      console.error("Error al actualizar:", error);
-      Alert.alert("Error", "Ocurrió un error de conexión.");
-    } finally {
-      setLoading(false);
-    }
+              if (result.estado == "1") {
+                Alert.alert("Éxito", result.mensaje);
+                // Recargar los datos para ver el cambio de estado y color
+                router.push("/despacho/pendiente");
+              } else {
+                Alert.alert(
+                  "Error",
+                  result.message || "No se pudo actualizar la orden.",
+                );
+              }
+            } catch (error) {
+              console.error("Error al actualizar:", error);
+              Alert.alert("Error", "Ocurrió un error de conexión.");
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ],
+    );
   };
 
   useFocusEffect(

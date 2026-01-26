@@ -17,6 +17,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Inicio {
   BOVINO: string;
+  CAPACIDAD: string;
+  COLOR: string;
   PROPIO: string;
   HOTELERIA: string;
   PARCERIA: string;
@@ -162,13 +164,21 @@ const HomeScreen = () => {
         <View style={styles.cardWrapper}>
           {/* Tarjeta Principal (Total) */}
           <View style={styles.mainCard}>
-            <View>
+            <View style={styles.leftColumn}>
               <Text style={styles.mainTitle}>Ganado</Text>
-              <Text style={styles.subTitleSmall}>TOTAL CABEZAS</Text>
+              <View style={styles.labelContainer}>
+                <Text style={styles.subTitleSmall}>TOTAL CABEZAS</Text>
+                <Text style={styles.subTitleSmall}>CAPACIDAD</Text>
+              </View>
             </View>
-            <Text style={styles.totalNumber}>
-              {Number(resumen?.BOVINO || 0).toLocaleString("es-BO")}
-            </Text>
+            <View style={styles.rightColumn}>
+              <Text style={styles.totalNumber}>
+                {Number(resumen?.BOVINO || 0).toLocaleString("es-BO")}
+              </Text>
+              <Text style={[styles.totalNumber, { color: resumen?.COLOR }]}>
+                {`${Number(resumen?.CAPACIDAD || 0).toLocaleString("es-BO")} %`}
+              </Text>
+            </View>
           </View>
 
           {/* Fila de Tarjetas Secundarias */}
@@ -204,33 +214,42 @@ const HomeScreen = () => {
 
         <View style={styles.potreroCard}>
           <Text style={styles.sectionTitle}>Ganado por potrero</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles3.row}
-          >
-            {categoriasDisponibles.map((cat) => (
-              <TouchableOpacity
-                key={cat}
-                onPress={() => setFiltroSeleccionado(cat)}
-                style={[
-                  styles3.potrero,
-                  // Si el nombre es largo (Enfermería, Temporal), el botón se estira
-                  cat.length > 1 && { width: "auto", paddingHorizontal: 16 },
-                  filtroSeleccionado === cat && styles3.active,
-                ]}
-              >
-                <Text
+          <View style={styles3.containerWrap}>
+            {categoriasDisponibles.map((cat) => {
+              // 1. Verificamos si esta categoría es la seleccionada actualmente
+              const estaSeleccionado = filtroSeleccionado === cat;
+
+              // 2. Si está seleccionado y es una letra (longitud 1), le ponemos el prefijo
+              // Si es "Enfermería" o "Temporal", lo dejamos igual.
+              const textoBoton =
+                estaSeleccionado && cat.length === 1 ? `POTRERO ${cat}` : cat;
+
+              return (
+                <TouchableOpacity
+                  key={cat}
+                  onPress={() => setFiltroSeleccionado(cat)}
                   style={[
-                    styles3.potreroText,
-                    filtroSeleccionado === cat && { color: "#FFF" },
+                    styles3.potrero,
+                    // 3. Ajuste dinámico de ancho: si está seleccionado o es palabra larga
+                    (estaSeleccionado || cat.length > 1) && {
+                      width: "auto",
+                      paddingHorizontal: 16,
+                    },
+                    estaSeleccionado && styles3.active,
                   ]}
                 >
-                  {cat}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+                  <Text
+                    style={[
+                      styles3.potreroText,
+                      estaSeleccionado && { color: "#FFF" },
+                    ]}
+                  >
+                    {textoBoton}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
           {potrerosFiltrados.map((item) => (
             <PotreroRow
               key={item.id}
@@ -249,7 +268,7 @@ const HomeScreen = () => {
               icon={<Heno />}
               label="HENO"
               value={Number(resumen?.HENO || 0).toLocaleString("es-BO")}
-              unit="toneladas"
+              unit="rollos"
             />
             <ResourceCard
               icon={<Nucleo />}
@@ -282,13 +301,13 @@ const HomeScreen = () => {
             {/* Fila 1 */}
             <View style={styles2.row}>
               <FinanceCard
-                label="INGRESOS"
+                label="INGRESOS / MES"
                 value={Number(resumen?.INGRESO_MES || 0).toLocaleString(
                   "es-BO",
                 )}
               />
               <FinanceCard
-                label="EGRESOS"
+                label="EGRESOS / MES"
                 value={Number(resumen?.EGRESO_MES || 0).toLocaleString("es-BO")}
               />
             </View>
@@ -371,6 +390,16 @@ const FinanceCard = ({ label, value }: { label: string; value: string }) => (
 );
 
 const styles = StyleSheet.create({
+  leftColumn: {
+    justifyContent: "space-between",
+  },
+  rightColumn: {
+    alignItems: "flex-end", // Alinea los números a la derecha
+    paddingTop: 40,
+  },
+  labelContainer: {
+    gap: 8, // Espacio vertical entre 'TOTAL CABEZAS' y 'CAPACIDAD'
+  },
   container: { flex: 1, backgroundColor: "#F5F5F5" },
   scrollContainer: { padding: 0 },
   row: {
@@ -406,8 +435,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
   },
-  mainTitle: { color: "#FFF", fontSize: 28, fontWeight: "bold" },
-  totalNumber: { color: "#FFF", fontSize: 36, fontWeight: "bold" },
+  mainTitle: {
+    color: "#FFF",
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  totalNumber: { color: "#FFF", fontSize: 25, fontWeight: "bold" },
 
   totalGanadoHeader: {
     flexDirection: "row",
@@ -581,27 +615,34 @@ const styles2 = StyleSheet.create({
 });
 
 const styles3 = StyleSheet.create({
+  containerWrap: {
+    flexDirection: "row", // Alinea los hijos en filas
+    flexWrap: "wrap", // ¡ESTA ES LA CLAVE! Permite saltar de línea
+    justifyContent: "flex-start", // Alinea los botones al inicio
+    marginVertical: 10,
+  },
   row: {
     flexDirection: "row",
     marginVertical: 10,
   },
 
   potrero: {
-    width: 44,
-    height: 44,
+    width: 45,
+    height: 34,
     borderRadius: 8,
-    backgroundColor: "#f2f2f2",
+    backgroundColor: "#EBE4DC",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 8,
+    marginBottom: 8,
   },
 
   active: {
-    backgroundColor: "#0f4d1c",
+    backgroundColor: "#12521C",
   },
 
   potreroText: {
-    color: "#000",
+    color: "#0F0F0F",
     fontWeight: "600",
   },
 

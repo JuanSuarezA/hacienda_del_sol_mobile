@@ -142,31 +142,44 @@ const OrdenesCompraScreen = () => {
   };
 
   const handleUpdateStatus = async (tipo: string) => {
-    try {
-      setLoading(true); // Opcional: mostrar loading mientras la API responde
+    const accion = tipo === "1" ? "recepcionar" : "rechazar";
+    Alert.alert(
+      "Confirmación",
+      `¿Estás seguro de que quieres ${accion} esta orden?`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: `Sí, ${accion}`,
+          onPress: async () => {
+            try {
+              setLoading(true); // Opcional: mostrar loading mientras la API responde
 
-      const response = await fetch(
-        `https://kleurdigital.xyz/util/recepciones-oc/editarOrden_mobile.php?id=${id}&tipo=${tipo}`,
-      );
+              const response = await fetch(
+                `https://kleurdigital.xyz/util/recepciones-oc/editarOrden_mobile.php?id=${id}&tipo=${tipo}`,
+              );
 
-      const result = await response.json();
+              const result = await response.json();
 
-      if (result.estado == "1") {
-        Alert.alert("Éxito", result.mensaje);
-        // Recargar los datos para ver el cambio de estado y color
-        router.push("/orden-de-compra/aprobada");
-      } else {
-        Alert.alert(
-          "Error",
-          result.message || "No se pudo actualizar la orden.",
-        );
-      }
-    } catch (error) {
-      console.error("Error al actualizar:", error);
-      Alert.alert("Error", "Ocurrió un error de conexión.");
-    } finally {
-      setLoading(false);
-    }
+              if (result.estado == "1") {
+                Alert.alert("Éxito", result.mensaje);
+                // Recargar los datos para ver el cambio de estado y color
+                router.push("/orden-de-compra/aprobada");
+              } else {
+                Alert.alert(
+                  "Error",
+                  result.message || "No se pudo actualizar la orden.",
+                );
+              }
+            } catch (error) {
+              console.error("Error al actualizar:", error);
+              Alert.alert("Error", "Ocurrió un error de conexión.");
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ],
+    );
   };
 
   useFocusEffect(

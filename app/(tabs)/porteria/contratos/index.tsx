@@ -69,34 +69,48 @@ const IngresosScreen = () => {
   });
 
   const handleUpdateStatus = async (id: string, tipo: string) => {
-    try {
-      setLoading(true); // Opcional: mostrar loading mientras la API responde
+    const accion =
+      tipo === "1"
+        ? "registrar el ingreso"
+        : tipo === "2"
+          ? "registrar la salida"
+          : "pendiente";
+    Alert.alert("Confirmación", `¿Estás seguro de que quieres ${accion} ?`, [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: `Sí, registrar`,
+        onPress: async () => {
+          try {
+            setLoading(true); // Opcional: mostrar loading mientras la API responde
 
-      const response = await fetch(
-        `https://kleurdigital.xyz/util/ingresos-salidas-contratos/ingresoContrato_mobile.php?id=${id}&tipo=${tipo}&u=${user?.id}`,
-      );
+            const response = await fetch(
+              `https://kleurdigital.xyz/util/ingresos-salidas-contratos/ingresoContrato_mobile.php?id=${id}&tipo=${tipo}&u=${user?.id}`,
+            );
 
-      const result = await response.json();
+            const result = await response.json();
 
-      if (result.estado == "1") {
-        Alert.alert("Éxito", result.mensaje, [
-          {
-            text: "OK",
-            onPress: () => fetchIngresos(), // <--- ESTO REFRESCARÁ LOS DATOS
-          },
-        ]);
-      } else {
-        Alert.alert(
-          "Error",
-          result.message || "No se pudo actualizar la orden.",
-        );
-      }
-    } catch (error) {
-      console.error("Error al actualizar:", error);
-      Alert.alert("Error", "Ocurrió un error de conexión.");
-    } finally {
-      setLoading(false);
-    }
+            if (result.estado == "1") {
+              Alert.alert("Éxito", result.mensaje, [
+                {
+                  text: "OK",
+                  onPress: () => fetchIngresos(), // <--- ESTO REFRESCARÁ LOS DATOS
+                },
+              ]);
+            } else {
+              Alert.alert(
+                "Error",
+                result.message || "No se pudo actualizar la orden.",
+              );
+            }
+          } catch (error) {
+            console.error("Error al actualizar:", error);
+            Alert.alert("Error", "Ocurrió un error de conexión.");
+          } finally {
+            setLoading(false);
+          }
+        },
+      },
+    ]);
   };
 
   const renderButtons = (item: any) => {
@@ -107,7 +121,7 @@ const IngresosScreen = () => {
             style={[styles4.button, styles4.approve]}
             onPress={() => handleUpdateStatus(item.id, "1")}
           >
-            <Text style={styles4.buttonText}>PUEDE INGRESAR</Text>
+            <Text style={styles4.buttonText}>REGISTRAR INGRESO</Text>
             <CamionIngresar />
           </TouchableOpacity>
         );
@@ -117,7 +131,7 @@ const IngresosScreen = () => {
             style={[styles4.button, styles4.reject]}
             onPress={() => handleUpdateStatus(item.id, "2")}
           >
-            <Text style={styles4.buttonText}>PUEDE SALIR</Text>
+            <Text style={styles4.buttonText}>REGISTRAR SALIDA</Text>
             <CamionSalir />
           </TouchableOpacity>
         );
@@ -161,7 +175,7 @@ const IngresosScreen = () => {
             <Ionicons name="arrow-back" size={24} color="white" />
           </Link>
           <View style={styles3.titleWrapper}>
-            <Text style={styles3.headerTitle}>Contratos</Text>
+            <Text style={styles3.headerTitle}>Terceros</Text>
             <Text style={styles3.headerSubtitle}>
               Ingreso y Salida de Personal
             </Text>

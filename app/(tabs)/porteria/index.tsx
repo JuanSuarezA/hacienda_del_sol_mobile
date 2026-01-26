@@ -95,7 +95,7 @@ const IngresosScreen = () => {
             <Link href={"/porteria/contratos"} asChild>
               <TouchableOpacity style={styles2.button}>
                 <Ionicons name="clipboard-outline" size={20} color="#fff" />
-                <Text style={styles2.buttonText}>CONTRATOS</Text>
+                <Text style={styles2.buttonText}>TERCEROS</Text>
               </TouchableOpacity>
             </Link>
           </View>
