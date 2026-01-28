@@ -24,6 +24,7 @@ interface Notificaciones {
   fecha: string;
   hora: string;
   a: string;
+  n: string;
 }
 
 const IngresosScreen = () => {
@@ -84,6 +85,7 @@ const IngresosScreen = () => {
       <View style={styles.scrollContainer}>
         <FlatList
           data={notificaciones}
+          keyExtractor={(item) => item.n.toString()}
           renderItem={({ item }) => (
             <>
               <Text style={styles2.sectionTitle}>{item.fecha}</Text>

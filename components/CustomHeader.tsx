@@ -1,10 +1,12 @@
 import LogoHorizontal from "@/assets/images/logo/Logo-Horizontal.svg";
+import NotificacionesActivo from "@/assets/images/logo/Notificaciones-Activo.svg";
 import Notificaciones from "@/assets/images/logo/Notificaciones-Inactivo.svg";
 import { useAuth } from "@/context/AuthContext";
-import { Link, useRouter } from "expo-router";
+import { Link, useFocusEffect, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import React from "react";
+import React, { useCallback, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Image,
   StyleSheet,
@@ -13,11 +15,61 @@ import {
   View,
 } from "react-native";
 
+interface Notificaciones {
+  id: number;
+  tipo: string;
+  empleado_id: number;
+  solicitante: string;
+  titulo: string;
+  estado_id: number;
+  estado: string;
+  codigo: string;
+  fecha: string;
+  hora: string;
+  a: string;
+  n: string;
+}
+
 export default function CustomHeader() {
   const router = useRouter();
   const { user, setUser, loadingUser } = useAuth();
 
   if (loadingUser) return null;
+
+  // 2. Definir estados para los datos, la carga y el error
+  const [notificaciones, setNotificaciones] = useState<Notificaciones[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchNotificaciones = async () => {
+    try {
+      setLoading(true);
+      // Reemplaza esta URL por la de tu API real
+      const response = await fetch(
+        "https://kleurdigital.xyz/util/alertas/notificaciones_mobile.php",
+      );
+      const json = await response.json();
+
+      setNotificaciones(json.data || []); // Guardamos los datos en el estado
+    } catch (error) {
+      console.error("Error obteniendo ordenes:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchNotificaciones();
+    }, []),
+  );
+
+  if (loading && notificaciones.length === 0) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#E6B34D" />
+      </View>
+    );
+  }
 
   const handleLogout = () => {
     Alert.alert("Cerrar sesión", "¿Estás seguro de que quieres salir?", [
@@ -51,7 +103,11 @@ export default function CustomHeader() {
         <View style={styles.actions}>
           {(user?.rol_id === 1 || user?.rol_id === 22) && (
             <Link href="/notificaciones">
-              <Notificaciones />
+              {notificaciones.length === 0 ? (
+                <Notificaciones />
+              ) : (
+                <NotificacionesActivo />
+              )}
             </Link>
           )}
           <View style={styles.profileContainer}>
@@ -75,6 +131,12 @@ export default function CustomHeader() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F4F6F8",
+  },
   container: {
     backgroundColor: "#F5F5F5",
   },
