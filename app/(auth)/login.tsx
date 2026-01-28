@@ -1,4 +1,5 @@
 import LoginIcon from "@/assets/images/varios/login.svg";
+import { useAuth } from "@/context/AuthContext";
 import { loginApi } from "@/services/authService";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -20,6 +21,7 @@ import {
 
 export default function Login() {
   const router = useRouter();
+  const { setUser } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -33,16 +35,23 @@ export default function Login() {
 
     try {
       setLoading(true);
-
       const data = await loginApi(email, password);
-
       const userObject = data.user[0];
 
       // Guardar token
       await SecureStore.setItemAsync("token", data.token);
       await SecureStore.setItemAsync("user", JSON.stringify(userObject));
 
-      router.replace("/(tabs)");
+      setUser(userObject);
+
+      switch (userObject.rol_id) {
+        case 27:
+          router.replace("/(tabs)/porteria");
+          break;
+        default:
+          router.replace("/(tabs)");
+          break;
+      }
     } catch (error: any) {
       Alert.alert(
         "Error",
