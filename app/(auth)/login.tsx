@@ -1,6 +1,8 @@
 import LoginIcon from "@/assets/images/varios/login.svg";
 import { useAuth } from "@/context/AuthContext";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { loginApi } from "@/services/authService";
+import { saveToken } from "@/services/saveToken";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
@@ -20,6 +22,7 @@ import {
 } from "react-native";
 
 export default function Login() {
+  const { expoPushToken } = usePushNotifications();
   const router = useRouter();
   const { setUser } = useAuth();
   const [email, setEmail] = useState("");
@@ -43,6 +46,10 @@ export default function Login() {
       await SecureStore.setItemAsync("user", JSON.stringify(userObject));
 
       setUser(userObject);
+
+      const tk = await saveToken(userObject.id, expoPushToken);
+
+      console.log(tk);
 
       switch (userObject.rol_id) {
         case 27:
